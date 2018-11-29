@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.0-rc-1543498732
+# version: 1.0.0-rc-1543505520
 # name: diplay
 # license: MIT
 from display import get_display
