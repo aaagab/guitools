@@ -3,7 +3,6 @@
 # version: 1.0.0-rc-1543498732
 # name: diplay
 # license: MIT
-from tkinter import *
 import re
 from pprint import pprint
 import os
@@ -30,11 +29,16 @@ def get_monitor_from_coords(x, y, monitors):
     return ""
 
 def get_display():
-    root = Tk()
-
     display={}
 
-    mouseX, mouseY =root.winfo_pointerxy()
+    for line in shell.cmd_get_value("xdotool getmouselocation").splitlines():
+        for elem in line.split():
+            attrs=elem.split(":")
+            if attrs[0] == "x":
+                mouseX=int(attrs[1])
+            elif attrs[0] == "y":
+                mouseY=int(attrs[1])
+
     display.update(
         mouse=dict(
             x= mouseX,
@@ -89,8 +93,6 @@ def get_display():
             )
 
     monitors=[]
-    popup_relative_lower_right_x=-30
-    popup_relative_lower_right_y=-50
     rgx_str_geometry=r".*\s(\d+)x(\d+)([\+\-]\d+)([\+\-]\d+)\s.*"
     for line in shell.cmd_get_value("xrandr").splitlines():
         if " connected" in line:
