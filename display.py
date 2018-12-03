@@ -5,7 +5,7 @@
 # license: MIT
 import re
 from pprint import pprint
-import os
+import os, sys
 
 try:
     import modules.shell_helpers.shell_helpers as shell
