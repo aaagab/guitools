@@ -5,15 +5,10 @@
 # license: MIT
 from pprint import pprint
 
-from modules.importpath.importpath import Import_path
-
-import_path=Import_path().open()
-try:
-    from display import get_display
-    import_path.success()
-except Exception as e:
-    import_path.error(e)
-import_path.close()
-
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from display import get_display
+del sys.path[0:2]
 
 pprint(get_display())
