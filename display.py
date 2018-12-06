@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.0-rc-1543847929
+# version: 1.0.0-draft-1544109253
 # name: diplay
 # license: MIT
 import re
 from pprint import pprint
 import os, sys
 
-try:
-    import modules.shell_helpers.shell_helpers as shell
-except:
-    sys.path.insert(1, os.path.join(sys.path[0], '..'))
-    import shell_helpers.shell_helpers as shell
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import modules.shell_helpers.shell_helpers as shell
+del sys.path[0:1]
 
 def get_monitor_from_coords(x, y, monitors):
     for monitor in monitors:
