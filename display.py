@@ -5,12 +5,12 @@
 # license: MIT
 import re
 from pprint import pprint
-import os, sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import modules.shell_helpers.shell_helpers as shell
-del sys.path[0:1]
+del sys.path[0:2]
 
 def get_monitor_from_coords(x, y, monitors):
     for monitor in monitors:
