@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.0-rc-1544109389
+# version: 1.0.0-rc-1544109417
 # name: diplay
 # license: MIT
 import re
