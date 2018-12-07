@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.0-alpha-1544138919
+# version: 1.0.0-beta-1544149179
 # name: bwins
 # license: MIT
 
