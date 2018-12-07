@@ -23,6 +23,11 @@
             "cmd": "xdotool",
             "root": false,
             "version": "1:3.20160805.1-3"
+        },
+        {
+            "app": "wmctrl",
+            "cmd": "wmctrl",
+            "version": "1.07-7+b1"
         }
     ],
     "version": "1.0.0-beta-1544136724"
