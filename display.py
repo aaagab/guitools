@@ -44,7 +44,7 @@ def get_display():
             y= mouseY
         ),
         active_window=dict(
-            dec_id=shell.cmd_get_value("xdotool getactivewindow")
+            dec_id=int(shell.cmd_get_value("xdotool getactivewindow"))
         )
     )
 
@@ -134,14 +134,6 @@ def get_display():
 
     return display
 
-if __name__ == "__main__":
-    try:
-        from modules.deps.deps import deps
-        from modules.json_config.json_config import Json_config
-    except:
-        sys.path.insert(1, os.path.join(sys.path[0], '..'))
-        from deps.deps import deps
-        from json_config.json_config import Json_config
-
-    conf=Json_config()
-    deps(conf.data["deps"])
+def get_all_windows():
+    from dev.get_all_windows import get_all_windows
+    return get_all_windows()
