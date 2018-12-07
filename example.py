@@ -19,7 +19,7 @@ deps(conf.data["deps"])
 
 pprint(get_display())
 
-pprint(get_all_windows())
+pprint(Windows().sorted_by_class().filter_desktop().windows)
 
 
 
