@@ -5,6 +5,9 @@
 # license: MIT
 
 import re
+import subprocess, shlex, inspect
+from pprint import pprint
+
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -15,8 +18,6 @@ import time
 
 del sys.path[0:2]
 
-import re
-from pprint import pprint
 
 def bubble_sort_array(array, size):
     temp="" # int
@@ -199,7 +200,19 @@ class Window(object):
         return self
 
     def exists(self):
-        for line in shell.cmd_get_value("wmctrl -l").splitlines():
+        command="wmctrl -l"
+        stderr="start"
+        while stderr:
+            stderr=""
+            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ( stdout, stderr ) = process.communicate()
+            if stderr:
+                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
+                    msg.app_error("cmd: '{}' failed".format(command))
+                    sys.exit(1)
+
+        window_ids=stdout.decode("utf-8").rstrip()
+        for line in window_ids.splitlines():
             hex_id=hex(int(line.split(" ")[0].strip(), 16))
             if self.hex_id == hex_id:
                 return True
@@ -357,7 +370,19 @@ class Windows(object):
             return hex_id
 
     def get_all_windows(self):
-        window_ids=shell.cmd_get_value("wmctrl -l")
+        command="wmctrl -l"
+        stderr="start"
+        while stderr:
+            stderr=""
+            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ( stdout, stderr ) = process.communicate()
+            if stderr:
+                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
+                    msg.app_error("cmd: '{}' failed".format(command))
+                    sys.exit(1)
+
+        window_ids=stdout.decode("utf-8").rstrip()
+
         for line in window_ids.splitlines():
             hex_id=hex(int(line.strip().split(" ")[0], 16))
             self.windows.append(Window().update_fields(hex_id))
