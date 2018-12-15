@@ -82,7 +82,7 @@ for monitor in Monitors().monitors:
     monitor.print()
     tiles=monitor.get_tiles(3, 3, False)
     for tile in tiles:
-            time.sleep(0.5)
+            time.sleep(0.2)
             window.set_above()
             window.set_geometry(dict(
                     x=tile.upper_left_x, 
