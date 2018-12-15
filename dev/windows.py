@@ -46,9 +46,9 @@ def bubble_sort_array(array, size):
     return index_array
 
 class Window(object):
-    def __init__(self, hex_id):
+    def __init__(self, hex_id=""):
         self.type=""
-        self.hex_id=hex(int(hex_id, 16))
+        self.hex_id=""
         self.dec_id=""
         self.pid=""
         self.upper_left_x=""
@@ -67,10 +67,20 @@ class Window(object):
         self.frame_upper_left_x=""
         self.frame_upper_left_y=""
         self.monitors=""
-        self.update_fields()
 
-    def update_fields(self):
-        wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx | grep Konsole")
+        if hex_id:
+            self.hex_id=hex(int(hex_id, 16))
+            self.update_fields()
+
+    def update_fields(self, hex_id=""):
+        if hex_id:
+            self.hex_id=hex(int(hex_id, 16))
+        else:
+            if not self.hex_id:
+                msg.user_error("Window hex_id '{}' has not been defined, thus update_fields can't run.")
+                sys.exit(1)
+
+        wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
         window=""
         for line in wmctrl_fields.splitlines():
             hex_id=hex(int(line.split(" ")[0].strip(),16))
@@ -143,17 +153,23 @@ class Window(object):
         self.frame_upper_left_x=self.upper_left_x-self.border_left
         self.frame_upper_left_y=self.upper_left_y-self.border_top
 
+        return self
+
     def print(self):
         pprint(vars(self))
+        return self
 
     def focus(self):
         shell.cmd("wmctrl -i -a {}".format(self.hex_id))
+        return self
 
     def set_above(self):
         shell.cmd("wmctrl -i -r {} -b add,above".format(self.hex_id))
+        return self
     
     def unset_above(self):
         shell.cmd("wmctrl -i -r {} -b remove,above".format(self.hex_id))
+        return self
 
     def get_center_coords(self, monitor=""):
         if not monitor:
@@ -174,6 +190,14 @@ class Window(object):
         
         return [x, y]
 
+    def map(self):
+        os.system("xdotool windowmap --sync {dec_id}".format(dec_id=self.dec_id))
+        return self
+
+    def unmap(self):
+        os.system("xdotool windowunmap --sync {dec_id}".format(dec_id=self.dec_id))
+        return self
+
     def exists(self):
         for line in shell.cmd_get_value("wmctrl -l").splitlines():
             hex_id=hex(int(line.split(" ")[0].strip(), 16))
@@ -188,6 +212,7 @@ class Window(object):
             resize_x=100,
             resize_y=100
         ))
+        return self
 
     def set_geometry(self, obj_geometry):
         x = self.upper_left_x
@@ -317,17 +342,25 @@ class Windows(object):
         self.get_all_windows()
 
     def get_active(self):
+        hex_id=self.get_active_hex_id()
+        if not hex_id:
+            return ""
+        else:
+            return Window().update_fields(hex_id)
+
+    @staticmethod
+    def get_active_hex_id():
         hex_id=hex(int(shell.cmd_get_value("xdotool getactivewindow")))
         if not hex_id:
             return ""
         else:
-            return Window(hex_id)
+            return hex_id
 
     def get_all_windows(self):
         window_ids=shell.cmd_get_value("wmctrl -l")
         for line in window_ids.splitlines():
             hex_id=hex(int(line.strip().split(" ")[0], 16))
-            self.windows.append(Window(hex_id))
+            self.windows.append(Window().update_fields(hex_id))
         return self
 
     def filter_regular_type(self):

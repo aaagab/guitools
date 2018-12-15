@@ -100,9 +100,10 @@ windows=Windows().sorted_by_class().filter_regular_type()
 windows.print()
 
 mouse=Mouse()
-for tile in Monitors().monitors[0].get_tiles(10, 10, True):
-    time.sleep(.05)
-    mouse.set_coords(tile.upper_left_x, tile.upper_left_y)
+for monitor in Monitors().monitors:
+    for tile in monitor.get_tiles(10, 10, True):
+        time.sleep(.05)
+        mouse.set_coords(tile.upper_left_x, tile.upper_left_y)
 
 time.sleep(1)
 if window.exists():
