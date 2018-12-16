@@ -18,7 +18,6 @@ import time
 
 del sys.path[0:2]
 
-
 def bubble_sort_array(array, size):
     temp="" # int
     swap=True # boolean
@@ -377,6 +376,27 @@ class Windows(object):
             return ""
         else:
             return hex_id
+
+    @staticmethod
+    def exists(hex_id):
+        command="wmctrl -l"
+        stderr="start"
+        while stderr:
+            stderr=""
+            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ( stdout, stderr ) = process.communicate()
+            if stderr:
+                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
+                    msg.app_error("cmd: '{}' failed".format(command))
+                    sys.exit(1)
+
+        window_ids=stdout.decode("utf-8").rstrip()
+        for line in window_ids.splitlines():
+            line_hex_id=hex(int(line.split(" ")[0].strip(), 16))
+            if hex_id == line_hex_id:
+                return True
+        
+        return False
 
     def get_all_windows(self):
         command="wmctrl -l"
