@@ -81,8 +81,8 @@ class Window(object):
                 msg.user_error("Window hex_id '{}' has not been defined, thus update_fields can't run.")
                 sys.exit(1)
 
-        wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
         window=""
+        wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
         for line in wmctrl_fields.splitlines():
             hex_id=hex(int(line.split(" ")[0].strip(),16))
             if hex_id == self.hex_id:
@@ -90,8 +90,17 @@ class Window(object):
                 break
         
         if not window:
-            msg.user_error("Window with id '{}' not found.".format(self.hex_id))
-            sys.exit(1)
+            time.sleep(.5)
+            wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
+            for line in wmctrl_fields.splitlines():
+                hex_id=hex(int(line.split(" ")[0].strip(),16))
+                if hex_id == self.hex_id:
+                    window=line
+                    break
+
+            if not window:
+                msg.user_error("Window with id '{}' not found.".format(self.hex_id))
+                sys.exit(1)
 
         divider=True
         field=""
