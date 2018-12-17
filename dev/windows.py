@@ -148,14 +148,20 @@ class Window(object):
 
         xprop_fields=output=shell.cmd_get_value("xprop -id {} _NET_FRAME_EXTENTS _NET_WM_WINDOW_TYPE".format(self.hex_id))
         for line in xprop_fields.splitlines():
+            line=line.replace(":", "=")
             if "=" in line:
                 field, value = line.split("=")
+                value=value.strip()
                 if "_NET_FRAME_EXTENTS" in field:
-                    borders=value.strip().replace(" ","").split(",")
-                    borders=list(map(int, borders))
-                    self.border_left, self.border_right, self.border_top, self.border_bottom = borders
+                    if value != "not found.":
+                        borders=value.replace(" ","").split(",")
+                        borders=list(map(int, borders))
+                        self.border_left, self.border_right, self.border_top, self.border_bottom = borders
                 elif "_NET_WM_WINDOW_TYPE" in field:
-                    self.type= value.strip()
+                    if value != "not found.":
+                        self.type= value
+                    else:
+                        self.type="UNKNOWN"
 
         self.frame_width=self.width+self.border_left+self.border_right
         self.frame_height=self.height+self.border_top+self.border_bottom
@@ -420,7 +426,7 @@ class Windows(object):
     def filter_regular_type(self):
         tmp_windows=[]
         for window in self.windows:
-            if window.type == "_NET_WM_WINDOW_TYPE_NORMAL":
+            if window.type == "_NET_WM_WINDOW_TYPE_NORMAL" or window.type == "UNKNOWN":
                 tmp_windows.append(window)
 
         self.windows=tmp_windows
