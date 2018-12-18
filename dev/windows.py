@@ -67,6 +67,7 @@ class Window(object):
         self.frame_upper_left_x=""
         self.frame_upper_left_y=""
         self.monitors=""
+        self.command=""
 
         if hex_id:
             self.hex_id=hex(int(hex_id, 16))
@@ -168,6 +169,7 @@ class Window(object):
         self.frame_upper_left_x=self.upper_left_x-self.border_left
         self.frame_upper_left_y=self.upper_left_y-self.border_top
 
+        self.command=shell.cmd_get_value("ps -p {} -f -o cmd=".format(self.pid))
         return self
 
     def print(self):
@@ -374,6 +376,31 @@ class Windows(object):
             return ""
         else:
             return Window().update_fields(hex_id)
+    
+    @staticmethod
+    def get_window_hex_id_from_pid(pid):
+        command="wmctrl -lp"
+        stderr="start"
+        while stderr:
+            stderr=""
+            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ( stdout, stderr ) = process.communicate()
+            if stderr:
+                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
+                    msg.app_error("cmd: '{}' failed".format(command))
+                    sys.exit(1)
+
+        window_ids=stdout.decode("utf-8").rstrip()
+
+        for line in window_ids.splitlines():
+            tmp_line=re.sub(' +', ' ', line.strip())
+            tmp_line=tmp_line.split(" ")
+            hex_id=hex(int(tmp_line[0], 16))
+            line_pid=int(tmp_line[2])
+            if pid == line_pid:
+                return hex_id      
+        
+        return ""
 
     @staticmethod
     def get_active_hex_id():
