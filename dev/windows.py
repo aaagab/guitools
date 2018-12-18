@@ -68,6 +68,7 @@ class Window(object):
         self.frame_upper_left_y=""
         self.monitors=""
         self.command=""
+        self.exe_name=""
 
         if hex_id:
             self.hex_id=hex(int(hex_id, 16))
@@ -171,6 +172,7 @@ class Window(object):
 
         if self.pid != 0 and self.pid != "":
             self.command=shell.cmd_get_value("ps -p {} -f -o cmd=".format(self.pid))
+            self.exe_name=shell.cmd_get_value("ps -p {} -o comm=".format(self.pid))
 
         return self
 
