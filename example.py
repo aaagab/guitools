@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.0-alpha-1545139369
+# version: 1.0.0-alpha-1545149370
 # name: guitools
 # license: MIT
 from pprint import pprint
