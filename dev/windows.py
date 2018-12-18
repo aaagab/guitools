@@ -169,7 +169,9 @@ class Window(object):
         self.frame_upper_left_x=self.upper_left_x-self.border_left
         self.frame_upper_left_y=self.upper_left_y-self.border_top
 
-        self.command=shell.cmd_get_value("ps -p {} -f -o cmd=".format(self.pid))
+        if self.pid != 0 and self.pid != "":
+            self.command=shell.cmd_get_value("ps -p {} -f -o cmd=".format(self.pid))
+
         return self
 
     def print(self):
