@@ -22,7 +22,10 @@ os.system("xdg-open .")
 time.sleep(1.5)
 
 window=Windows().get_active()
+print(window.command)
+print(Windows.get_window_hex_id_from_pid(window.pid))
 print(window.name)
+
 
 time.sleep(.5)
 window.set_above()
