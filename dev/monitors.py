@@ -7,9 +7,10 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from windows import Windows, Taskbars
+
 
 import modules.shell_helpers.shell_helpers as shell
-from windows import *
 from mouses import *
 
 del sys.path[0:2]
@@ -25,7 +26,7 @@ class Tile(object):
         self.width=""
         self.height=""
         self.nums=""
-        self.num=""
+        self.index=""
         self.range_x=[]
         self.range_y=[]
 
@@ -63,7 +64,7 @@ class Monitor(object):
         self.tb_range_x=""
         self.tb_range_y=""
 
-        self.num=""
+        self.index=""
 
     def print(self):
         pprint(vars(self))
@@ -100,7 +101,7 @@ class Monitor(object):
             tile_height=int(self.height/int_h_divs)
 
         tiles=[]
-        num=1
+        index=1
         for h_div in range(int_h_divs):
             for v_div in range(int_v_divs):
                 tile=Tile()
@@ -108,7 +109,7 @@ class Monitor(object):
                 tile.upper_left_y=self.upper_left_y+(h_div*tile_height)
                 tile.width=tile_width
                 tile.height=tile_height
-                tile.num=num
+                tile.index=index
                 tile.range_x=[
                     tile.upper_left_x,
                     tile.upper_left_x+tile.width
@@ -121,14 +122,14 @@ class Monitor(object):
 
                 if tile_nums:
                     for value in tmp_tile_nums:
-                        if value == num:
+                        if value == index:
                             tiles.append(tile)
                             tmp_tile_nums.remove(value)
                             break
                 else:
                     tiles.append(tile)
 
-                num+=1
+                index+=1
             
             if tile_nums:
                 if len(tiles) == len(tile_nums):
@@ -146,7 +147,7 @@ class Monitors(object):
             if monitor.contains(x, y):
                 return monitor
 
-        return ""
+        return self.monitors[0]
 
     def get_active(self):
         monitor=""
@@ -251,8 +252,8 @@ class Monitors(object):
         monitors=[]
         rgx_str_geometry=r".*\s(\d+)x(\d+)([\+\-]\d+)([\+\-]\d+)\s.*"
 
-        task_bars=Windows().get_taskbars()
-        monitor_num=0
+        taskbars=Taskbars().taskbars
+        monitor_index=0
         for line in shell.cmd_get_value("xrandr").splitlines():
             if " connected" in line:
                 geometry=re.match(rgx_str_geometry,line)
@@ -279,9 +280,9 @@ class Monitors(object):
                     monitor.tb_range_x=monitor.range_x
                     monitor.tb_range_y=monitor.range_y
                     
-                    monitor_num+=1
-                    monitor.num=monitor_num
-                    for taskbar in task_bars:
+                    monitor.index=monitor_index
+                    monitor_index+=1
+                    for taskbar in taskbars:
                         if monitor.contains(taskbar.upper_left_x, taskbar.upper_left_y):
                             self.set_taskbar_attrs(taskbar, monitor)
 
