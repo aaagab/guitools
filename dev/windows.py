@@ -18,33 +18,6 @@ import modules.message.message as msg
 from modules.timeout.timeout import Timeout
 del sys.path[0:2]
 
-def bubble_sort_array(array, size):
-    temp="" # int
-    swap=True # boolean
-    index_array=[]
-
-    for i in range(0, size):
-        index_array.append(i)
-
-    index_order=[]
-
-    while swap:
-        swap=False
-        count2=0
-        for count in range(0, size-1):
-            if array[count] > array[count + 1]:
-                temp = array[count]
-                array[count] = array[count + 1]
-                array[count + 1] = temp
-
-                temp_index = index_array[count]
-                index_array[count] = index_array[count+1]
-                index_array[count +1] = temp_index
-
-                swap = True
-
-    return index_array
-
 class Taskbar(object):
     def __init__(self):
         self.upper_left_x=""
@@ -648,22 +621,22 @@ class Windows(object):
 
     def sorted_by_class(self):
         classes=[]
-        names=[]
         for window in self.windows:
-            classes.append(window._class)
-            names.append(window.name)
+            classes.append(window._class.lower())
 
         classes=sorted(set(classes))
-        names=sorted(set(names))
 
-        indices=[]
-        for window in self.windows:
-            num=int(str(classes.index(window._class)+1)+""+str(names.index(window.name)+1))
-            indices.append(num)
-        
         tmp_windows=[]
-        for index in bubble_sort_array(indices, len(indices)):
-            tmp_windows.append(self.windows[index])
+        for _class in classes:
+            tmp_names=[]
+            tmp_indexes=[]
+            for w, window in enumerate(self.windows):
+                if window._class.lower() == _class:
+                    tmp_indexes.append(w)                        
+                    tmp_names.append(window.name.lower())
+
+            for index in bubble_sort_array(tmp_names, len(tmp_names)):
+                tmp_windows.append(self.windows[tmp_indexes[index]])
 
         self.windows=tmp_windows
 
@@ -672,3 +645,30 @@ class Windows(object):
     def print(self):
         for window in self.windows:
             window.print()
+
+def bubble_sort_array(array, size):
+    temp="" # int
+    swap=True # boolean
+    index_array=[]
+
+    for i in range(0, size):
+        index_array.append(i)
+
+    index_order=[]
+
+    while swap:
+        swap=False
+        count2=0
+        for count in range(0, size-1):
+            if array[count] > array[count + 1]:
+                temp = array[count]
+                array[count] = array[count + 1]
+                array[count + 1] = temp
+
+                temp_index = index_array[count]
+                index_array[count] = index_array[count+1]
+                index_array[count +1] = temp_index
+
+                swap = True
+
+    return index_array
