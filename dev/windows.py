@@ -289,28 +289,82 @@ class Window(object):
         y = self.upper_left_y
         width = self.width
         height = self.height
+
+        width_ok=True
+        height_ok=True
+        x_ok=True
+        y_ok=True
+
         if obj_geometry:
             if "x" in obj_geometry:
                 x=obj_geometry["x"]+self.border_left
+                x_ok=False
             if "y" in obj_geometry:
                 y=obj_geometry["y"]+self.border_top
+                y_ok=False
             if "width" in obj_geometry:
                 width=obj_geometry["width"]-self.border_left-self.border_right
+                width_ok=False
             if "height" in obj_geometry:
                 height=obj_geometry["height"]-self.border_top-self.border_bottom
-        
+                height_ok=False
+
         self.release_edges()
-        os.system("wmctrl -i -r {hex_id} -e 0,{x},{y},{width},{height}".format(
-            hex_id=self.hex_id,
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-        ))
 
-        # then update geometry
-        self.update_fields()
+        timer=Timeout(1.5)
+        tolerance=10
+        pass_counter=0
+        while True:
+            os.system("wmctrl -i -r {hex_id} -e 0,{x},{y},{width},{height}".format(
+                hex_id=self.hex_id,
+                x=x,
+                y=y,
+                width=width,
+                height=height,
+            ))
 
+            # then update geometry
+            self.update_fields()
+            
+            if timer.has_ended():
+                print("# Timer Ended for set geometry #")
+                break
+
+            if not width_ok:
+                if abs(self.width - width) > tolerance:
+                    pass_counter+=1
+                    self.release_edges()
+                    continue
+                else:
+                    width_ok=True
+            
+            if not height_ok:
+                if abs(self.height - height) > tolerance:
+                    pass_counter+=1
+                    self.release_edges()
+                    continue
+                else:
+                    height_ok=True
+
+            if not x_ok:
+                if abs(self.upper_left_x - x) > tolerance:
+                    pass_counter+=1
+                    self.release_edges()
+                    continue
+                else:
+                    x_ok=True
+
+            if not y_ok:
+                if abs(self.upper_left_y - y) > tolerance:
+                    pass_counter+=1
+                    self.release_edges()
+                    continue
+                else:
+                    y_ok=True
+
+            if width_ok and height_ok and x_ok and y_ok:
+                break
+            
         return self
 
     def move(self, x, y):
@@ -438,8 +492,6 @@ class Window(object):
             width=selected_tile.width, 
             height=selected_tile.height)
         )
-
-        self.update_fields()
 
         return stop
 

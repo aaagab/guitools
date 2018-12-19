@@ -85,6 +85,9 @@ while direction:
     if counter == 4:
         break
 
+# time.sleep(1)
+# window.close()
+# sys.exit()
 
 time.sleep(.5)
 window.set_above()
