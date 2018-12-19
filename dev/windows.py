@@ -82,7 +82,7 @@ class Window(object):
             self.hex_id=hex(int(hex_id, 16))
             self.update_fields()
 
-    def update_fields(self, hex_id=""):
+    def update_fields(self, hex_id="", monitor=""):
         if hex_id:
             self.hex_id=hex(int(hex_id, 16))
         else:
@@ -182,8 +182,12 @@ class Window(object):
             self.command=shell.cmd_get_value("ps -p {} -f -o cmd=".format(self.pid))
             self.exe_name=shell.cmd_get_value("ps -p {} -o comm=".format(self.pid))
 
-        self.monitor=self.monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
-
+        if not monitor:
+            self.monitor=self.monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
+            if not self.monitor:
+                self.monitor=self.monitors.monitors[0]
+        else:
+            self.monitor=monitor
         return self
 
     def print(self):
