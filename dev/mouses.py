@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.0-alpha-1545225614
+# version: 1.0.0-alpha-1545234292
 # name: guitools
 # license: MIT
 
