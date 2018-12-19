@@ -7,7 +7,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from windows import Windows, Taskbars
+from windows import Windows, Taskbars, Window
 
 
 import modules.shell_helpers.shell_helpers as shell
@@ -147,19 +147,24 @@ class Monitors(object):
             if monitor.contains(x, y):
                 return monitor
 
-        return self.monitors[0]
+        return ""
 
     def get_active(self):
         monitor=""
         if len(self.monitors) > 1:
-            active_win=Windows().get_active()
-            monitor=self.get_monitor_from_coords(
-                active_win.upper_left_x,
-                active_win.upper_left_y,
-            )
+            # active_win=Windows().get_active()
+            active_win_hex_id=Windows.get_active_hex_id()
+            if active_win_hex_id != "":
+                active_win=Window(active_win_hex_id)
+                monitor=self.get_monitor_from_coords(
+                    active_win.upper_left_x,
+                    active_win.upper_left_y,
+                )
             if not monitor:
                 x, y = Mouse().get_coords()
                 monitor=self.get_monitor_from_coords(x, y)
+                if not monitor:
+                    monitor=self.monitors[0]
         else:
             monitor=self.monitors[0]
 
