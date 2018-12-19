@@ -18,6 +18,106 @@ import modules.message.message as msg
 from modules.timeout.timeout import Timeout
 del sys.path[0:2]
 
+class Regular_windows(object):
+    def __init__(self):
+        self.hex_id=""
+        self._class=""
+        self.windows=[]
+        self.get_windows()
+        self.sorted_by_class()
+
+    def get_windows(self):
+        command="wmctrl -lx"
+        timer=Timeout(1.5)
+        while True:
+            stderr=""
+            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ( stdout, stderr ) = process.communicate()
+            if stderr:
+                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
+                    msg.app_error("cmd: '{}' failed".format(command))
+                    sys.exit(1)
+
+            if stdout:
+                break
+
+            if timer.has_passed():
+                msg.user_error("Can't get window list from wmctrl")
+                sys.exit(1)
+
+        window_ids=stdout.decode("utf-8").rstrip()
+
+        for line in window_ids.splitlines():
+            tmp_line=re.sub(' +', ' ', line.strip()).split(" ")
+            hex_id=hex(int(tmp_line[0], 16))
+            xprop_fields=output=shell.cmd_get_value("xprop -id {} _NET_WM_WINDOW_TYPE".format(hex_id))
+            if "_NET_WM_WINDOW_TYPE_NORMAL" in xprop_fields or "not found" in xprop_fields:
+                window=dict(
+                    hex_id=hex_id,
+                    _class=tmp_line[2].split(".")[0],
+                    name=" ".join(tmp_line[4:])
+                )
+                self.windows.append(window)
+
+    @staticmethod
+    def focus(hex_id):
+        shell.cmd("wmctrl -i -a {}".format(hex_id))
+
+    def print(self):
+        for window in self.windows:
+            pprint(window)
+
+    def sorted_by_class(self):
+        classes=[]
+        for window in self.windows:
+            classes.append(window["_class"].lower())
+
+        classes=sorted(set(classes))
+
+        tmp_windows=[]
+        for _class in classes:
+            tmp_names=[]
+            tmp_indexes=[]
+            for w, window in enumerate(self.windows):
+                if window["_class"].lower() == _class:
+                    tmp_indexes.append(w)                        
+                    tmp_names.append(window["name"].lower())
+
+            for index in bubble_sort_array(tmp_names, len(tmp_names)):
+                tmp_windows.append(self.windows[tmp_indexes[index]])
+
+        self.windows=tmp_windows
+
+        return self
+
+def bubble_sort_array(array, size):
+    temp="" # int
+    swap=True # boolean
+    index_array=[]
+
+    for i in range(0, size):
+        index_array.append(i)
+
+    index_order=[]
+
+    while swap:
+        swap=False
+        count2=0
+        for count in range(0, size-1):
+            if array[count] > array[count + 1]:
+                temp = array[count]
+                array[count] = array[count + 1]
+                array[count + 1] = temp
+
+                temp_index = index_array[count]
+                index_array[count] = index_array[count+1]
+                index_array[count +1] = temp_index
+
+                swap = True
+
+    return index_array
+    
+
 class Taskbar(object):
     def __init__(self):
         self.upper_left_x=""
@@ -649,30 +749,3 @@ class Windows(object):
     def print(self):
         for window in self.windows:
             window.print()
-
-def bubble_sort_array(array, size):
-    temp="" # int
-    swap=True # boolean
-    index_array=[]
-
-    for i in range(0, size):
-        index_array.append(i)
-
-    index_order=[]
-
-    while swap:
-        swap=False
-        count2=0
-        for count in range(0, size-1):
-            if array[count] > array[count + 1]:
-                temp = array[count]
-                array[count] = array[count + 1]
-                array[count + 1] = temp
-
-                temp_index = index_array[count]
-                index_array[count] = index_array[count+1]
-                index_array[count +1] = temp_index
-
-                swap = True
-
-    return index_array

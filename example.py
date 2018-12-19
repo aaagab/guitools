@@ -20,6 +20,8 @@ del sys.path[0:2]
 conf=Json_config()
 deps(conf.data["deps"])
 
+Regular_windows().print()
+
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 hex_id=Windows.get_window_hex_id_from_pid(proc.pid)
