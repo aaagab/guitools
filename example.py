@@ -4,27 +4,86 @@
 # name: guitools
 # license: MIT
 from pprint import pprint
-
 import sys, os
+import time
+import shlex
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 from guitools import *
 from modules.deps.deps import deps
 from modules.json_config.json_config import Json_config
-import time
+from modules.xdginfo.xdginfo import xdginfo
 del sys.path[0:2]
 
 conf=Json_config()
 deps(conf.data["deps"])
 
-os.system("xdg-open .")
-time.sleep(1.5)
+executable=xdginfo('.')[1]
+proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+hex_id=Windows.get_window_hex_id_from_pid(proc.pid)
+window=Window(hex_id)
+print(window.pid)
 
-window=Windows().get_active()
+window.tile("left",0)
+print(window.get_tile())
+print(window.monitor.index)
+window.focus()
+time.sleep(.5)
+
+window.tile("right",0)
+print(window.get_tile())
+print(window.monitor.index)
+window.focus()
+time.sleep(.5)
+
+window.maximize(0)
+print(window.get_tile())
+print(window.monitor.index)
+window.focus()
+time.sleep(.5)
+
+window.tile("left",1)
+print(window.get_tile())
+print(window.monitor.index)
+window.focus()
+time.sleep(.5)
+
+window.tile("right",1)
+print(window.get_tile())
+print(window.monitor.index)
+window.focus()
+time.sleep(.5)
+
+window.maximize(1)
+print(window.get_tile())
+print(window.monitor.index)
+window.focus()
+time.sleep(.5)
+
+active_window=Windows().get_active()
+print(active_window.pid)
 print(window.command)
-print(Windows.get_window_hex_id_from_pid(window.pid))
 print(window.name)
+print(window.monitor.index)
+
+window.tile("left",0)
+
+direction=["left", "right"]
+counter=0
+index=0
+while direction:
+    time.sleep(.3)
+    if window.tile(direction[index]):
+        if index==0:
+            index=1
+        else:
+            index=0
+        counter+=1
+
+    if counter == 4:
+        break
 
 
 time.sleep(.5)

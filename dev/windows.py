@@ -7,6 +7,7 @@
 import re
 import subprocess, shlex, inspect
 from pprint import pprint
+import time
 
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -14,8 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 import modules.shell_helpers.shell_helpers as shell
 import modules.message.message as msg
-import time
-
+from modules.timeout.timeout import Timeout
 del sys.path[0:2]
 
 def bubble_sort_array(array, size):
@@ -45,6 +45,40 @@ def bubble_sort_array(array, size):
 
     return index_array
 
+class Taskbar(object):
+    def __init__(self):
+        self.upper_left_x=""
+        self.upper_left_y=""
+        self.width=""
+        self.height=""
+
+class Taskbars(object):
+    def __init__(self):
+        self.taskbars=[]
+        command="wmctrl -lGpx"
+        stderr="start"
+        while stderr:
+            stderr=""
+            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ( stdout, stderr ) = process.communicate()
+            if stderr:
+                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
+                    msg.app_error("cmd: '{}' failed".format(command))
+                    sys.exit(1)
+
+        window_ids=stdout.decode("utf-8").rstrip()
+        for line in window_ids.splitlines():
+            line=re.sub(r" +", " ", line.strip()).split(" ")
+            hex_id=hex(int(line[0], 16))
+            xprop_fields=output=shell.cmd_get_value("xprop -id {} _NET_WM_WINDOW_TYPE".format(hex_id))
+            if "_NET_WM_WINDOW_TYPE_DOCK" in xprop_fields:
+                taskbar=Taskbar()
+                taskbar.upper_left_x=int(line[3])
+                taskbar.upper_left_y=int(line[4])
+                taskbar.width=int(line[5])
+                taskbar.height=int(line[6])
+                self.taskbars.append(taskbar)
+
 class Window(object):
     def __init__(self, hex_id=""):
         self.type=""
@@ -66,9 +100,10 @@ class Window(object):
         self.frame_height=""
         self.frame_upper_left_x=""
         self.frame_upper_left_y=""
-        self.monitors=""
         self.command=""
         self.exe_name=""
+        self.monitor=""
+        self.monitors=self.get_monitors()
 
         if hex_id:
             self.hex_id=hex(int(hex_id, 16))
@@ -174,6 +209,8 @@ class Window(object):
             self.command=shell.cmd_get_value("ps -p {} -f -o cmd=".format(self.pid))
             self.exe_name=shell.cmd_get_value("ps -p {} -o comm=".format(self.pid))
 
+        self.monitor=self.monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
+
         return self
 
     def print(self):
@@ -274,7 +311,6 @@ class Window(object):
         # then update geometry
         self.update_fields()
 
-
         return self
 
     def move(self, x, y):
@@ -292,56 +328,109 @@ class Window(object):
 
         return Monitors()
 
-    def tile(self, direction, monitor_num=""): # left or right
+    def get_overlapped_area(self, tile):
+        r1={}
+        r2={}
+        l1={}
+        l2={}
+
+
+        l1["x"]=self.frame_upper_left_x
+        l1["y"]=self.frame_upper_left_y
+
+        r1["x"]=self.frame_upper_left_x+self.frame_width
+        r1["y"]=self.frame_upper_left_y+self.frame_height
+        
+        l2["x"]=tile.upper_left_x
+        l2["y"]=tile.upper_left_y
+        
+        r2["x"]=tile.upper_left_x+tile.width
+        r2["y"]=tile.upper_left_y+tile.height
+
+        area1 = abs(l1["x"] - r1["x"]) * abs(l1["y"] - r1["y"]) 
+  
+        area2 = abs(l2["x"] - r2["x"]) * abs(l2["y"] - r2["y"]) 
+
+        areaI = (min(r1["x"], r2["x"]) - max(l1["x"], l2["x"])) * (min(r1["y"], r2["y"]) - max(l1["y"], l2["y"])) 
+
+        surface_union= area1+area2-areaI
+
+        ratio= int(areaI/surface_union * 100)
+
+        if ratio < 0:
+            ratio=0
+
+        return ratio
+
+    def tile(self, direction, monitor_index=None): # left, right
         monitors=[]
-        if not self.monitors:
-            self.monitors=self.get_monitors()
-
-        if monitor_num:
-            monitors.append(self.monitors.monitors[monitor_num-1])
-        else:
+        
+        if monitor_index is None:
             monitors=self.monitors.monitors
-
+        else:
+            if monitor_index in range(0, len(self.monitors.monitors)):
+                monitors.append(self.monitors.monitors[monitor_index])
+            else:
+                monitors.append(self.monitors.monitors[0])
+            
         tiles=[]
         for monitor in monitors:
             tiles.extend(monitor.get_tiles(2, 1, True))
 
         selected_tile=""
         tile_num=0
-        stop=False
-        tolerance=10 # I had to put a tolerance because the snap function of kwin just increase the window border with 4 pixels all around
+        stop=""
+        tolerance=10
+        ratios_overlap=[]
         for tile in tiles:
-            if tile.contains(self.upper_left_x, self.upper_left_y):
-                if  (self.frame_upper_left_x >= (tile.upper_left_x - tolerance) and self.frame_upper_left_x <= (tile.upper_left_x + tolerance)) and (self.frame_upper_left_y >= (tile.upper_left_y - tolerance) and self.frame_upper_left_y <= (tile.upper_left_y + tolerance)):
-                # if tile.contains(self.frame_upper_left_x, self.frame_upper_left_y):
-                    # if self.frame_width == tile.width and self.frame_height == tile.height:
-                    if  (self.frame_width >= (tile.width - tolerance) and self.frame_width <= (tile.width + tolerance)) and (self.frame_height >= (tile.height - tolerance) and self.frame_height <= (tile.height + tolerance)):
-                        if direction == "left":
-                            if tile_num == 0:
-                                return True
-                            else:
-                                selected_tile=tiles[tile_num-1]
-                                if tile_num-1 == 0:
-                                    stop=True
-                        elif direction == "right":
-                            if tile_num == (len(tiles) -1):
-                                return True
-                            else:
-                                selected_tile=tiles[tile_num+1]
-                                if tile_num+1 == len(tiles)-1:
-                                    stop=True
-                    else:
-                        selected_tile=tile
-                else:
-                    selected_tile=tile
+            ratios_overlap.append(self.get_overlapped_area(tile))
 
-            tile_num+=1
-
-        if not selected_tile:
+        max_ratio=max(ratios_overlap)
+        
+        if max_ratio == 0:
             if direction == "left":
                 selected_tile=tiles[0]
+                stop=True
             elif direction == "right":
                 selected_tile=tiles[-1]
+                stop=True
+        else:
+            ratio_index_duplicates=[]
+
+            for r, ratio in enumerate(ratios_overlap):
+                if ratio == max_ratio:
+                    ratio_index_duplicates.append(r)
+
+            if direction == "left":
+                tile_index=ratio_index_duplicates[0]
+
+                if tile_index == 0:
+                    if max_ratio >= 98:
+                        return True
+                    else:
+                        selected_tile=tiles[tile_index]
+                        stop=True
+                else:
+                    selected_tile=tiles[tile_index-1]
+                    if tile_index-1 == 0:
+                        stop=True
+                    else:
+                        stop=False
+            elif direction == "right":
+                tile_index=ratio_index_duplicates[-1]
+
+                if tile_index==(len(tiles)-1):
+                    if max_ratio >= 98:
+                        return True
+                    else:
+                        selected_tile=tiles[len(tiles)-1]
+                        stop=True
+                else:
+                    selected_tile=tiles[tile_index+1]
+                    if tile_index+1 == (len(tiles)-1):
+                        stop=True
+                    else:
+                        stop=False
 
         self.set_geometry(dict(
             x=selected_tile.upper_left_x, 
@@ -354,11 +443,41 @@ class Window(object):
 
         return stop
 
+    def get_tile(self):
+        tiles=[]
+        tiles_labels=[]
+        for monitor in self.monitors.monitors:
+            tiles.extend(monitor.get_tiles(2, 1, True))
+            tiles_labels.extend(["left", "right"])
+
+        window_area=self.width * self.height
+        for t, tile in enumerate(tiles):
+            tile_area=tile.width * tile.height
+            if tile.contains(self.upper_left_x, self.upper_left_y):
+                if window_area > tile_area:
+                    return "maximize"
+                else:
+                    return tiles_labels[t]
+
+        return "maximize"
+
+
     def minimize(self):
         os.system("xdotool windowminimize {}".format(self.dec_id))
         self.update_fields()
 
-    def maximize(self):
+    def maximize(self, monitor_index=None):
+        monitor=""
+        if monitor_index is None:
+            monitor=self.monitors.get_active()
+        else:
+            if monitor_index in range(0, len(self.monitors.monitors)):
+                monitor=self.monitors.monitors[monitor_index]
+            else:
+                monitor=self.monitors.monitors[0]
+
+        if monitor.index != self.monitor.index:
+            self.move(monitor.upper_left_x, monitor.upper_left_y)
         os.system("wmctrl -i -r {} -b add,maximized_vert,maximized_horz".format(self.hex_id))
         self.update_fields()
 
@@ -384,9 +503,8 @@ class Windows(object):
     @staticmethod
     def get_window_hex_id_from_pid(pid):
         command="wmctrl -lp"
-        stderr="start"
-        while stderr:
-            stderr=""
+        timer=Timeout(2)
+        while True:
             process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             ( stdout, stderr ) = process.communicate()
             if stderr:
@@ -394,16 +512,20 @@ class Windows(object):
                     msg.app_error("cmd: '{}' failed".format(command))
                     sys.exit(1)
 
-        window_ids=stdout.decode("utf-8").rstrip()
+            window_ids=stdout.decode("utf-8").rstrip()
 
-        for line in window_ids.splitlines():
-            tmp_line=re.sub(' +', ' ', line.strip())
-            tmp_line=tmp_line.split(" ")
-            hex_id=hex(int(tmp_line[0], 16))
-            line_pid=int(tmp_line[2])
-            if pid == line_pid:
-                return hex_id      
-        
+            for line in window_ids.splitlines():
+                tmp_line=re.sub(' +', ' ', line.strip())
+                tmp_line=tmp_line.split(" ")
+                hex_id=hex(int(tmp_line[0], 16))
+                line_pid=int(tmp_line[2])
+                if pid == line_pid:
+                    return hex_id
+
+            if timer.has_ended():
+                msg.warning("Could not get an hex_id from pid {}".format(pid))
+                break
+   
         return ""
 
     @staticmethod
