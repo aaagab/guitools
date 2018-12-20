@@ -216,7 +216,7 @@ class Window(object):
                 sys.exit(1)
 
         window=""
-        timer=Timeout(1)
+        timer=Timeout(2)
         while True:
             wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
             for line in wmctrl_fields.splitlines():
