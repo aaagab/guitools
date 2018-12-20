@@ -15,12 +15,16 @@ from guitools import *
 from modules.deps.deps import deps
 from modules.json_config.json_config import Json_config
 from modules.xdginfo.xdginfo import xdginfo
+from modules.timeout.timeout import Timeout
+
 del sys.path[0:2]
 
 conf=Json_config()
 deps(conf.data["deps"])
 
+timer=Timeout(0)
 Regular_windows().print()
+print(timer.get_elapsed_time())
 
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
