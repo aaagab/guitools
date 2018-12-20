@@ -16,13 +16,29 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import modules.shell_helpers.shell_helpers as shell
 import modules.message.message as msg
 from modules.timeout.timeout import Timeout
+import shutil
 del sys.path[0:2]
+
+def get_exe_paths_from_pid(pid):
+    exe_name, command=shell.cmd_get_value("ps -q {} -o \"%c\" -o \":%a\" --no-headers".format(pid)).split(":")
+    exe_name=exe_name.strip()
+    command=command.strip()
+    filenpa_exe=""
+    # this loop does not take in account path with spaces.
+    for c in command:
+        if c == " ":
+            break
+        filenpa_exe+=c
+
+    if filenpa_exe[0] != os.sep:
+        filenpa_exe=shutil.which(filenpa_exe)
+
+    return exe_name, command, filenpa_exe
 
 class Regular_windows(object):
     def __init__(self):
         self.windows=[]
         self.get_windows()
-        self.sorted_by_exe_names()
 
     def get_windows(self):
         command="wmctrl -lp"
@@ -55,11 +71,17 @@ class Regular_windows(object):
                     pid=int(tmp_line[2]),
                     name=" ".join(tmp_line[4:]),
                 )
-                window.update(
-                    exe_name=shell.cmd_get_value("ps -p {} -o comm=".format(window["pid"]))
-                )
-                self.windows.append(window)
 
+                exe_name, command, filenpa_exe = get_exe_paths_from_pid(window["pid"])
+
+                window.update(
+                    exe_name=exe_name,
+                    command=command,
+                    filenpa_exe=filenpa_exe
+                )
+
+                self.windows.append(window)
+        
     @staticmethod
     def focus(hex_id):
         shell.cmd("wmctrl -i -a {}".format(hex_id))
@@ -279,8 +301,7 @@ class Window(object):
         self.frame_upper_left_y=self.upper_left_y-self.border_top
 
         if self.pid != 0 and self.pid != "":
-            self.command=shell.cmd_get_value("ps -p {} -f -o cmd=".format(self.pid))
-            self.exe_name=shell.cmd_get_value("ps -p {} -o comm=".format(self.pid))
+            self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid)
 
         if not monitor:
             self.monitor=self.monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
