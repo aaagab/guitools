@@ -200,6 +200,8 @@ class Window(object):
         self.exe_name=""
         self.monitor=""
         self.monitors=self.get_monitors()
+        self.min_width=50
+        self.min_height=50
 
         if hex_id:
             self.hex_id=hex(int(hex_id, 16))
@@ -214,23 +216,19 @@ class Window(object):
                 sys.exit(1)
 
         window=""
-        wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
-        for line in wmctrl_fields.splitlines():
-            hex_id=hex(int(line.split(" ")[0].strip(),16))
-            if hex_id == self.hex_id:
-                window=line
-                break
-        
-        if not window:
-            time.sleep(.5)
+        timer=Timeout(1)
+        while True:
             wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
             for line in wmctrl_fields.splitlines():
                 hex_id=hex(int(line.split(" ")[0].strip(),16))
                 if hex_id == self.hex_id:
                     window=line
                     break
-
-            if not window:
+            
+            if window:
+                break
+            
+            if timer.has_ended():
                 msg.user_error("Window with id '{}' not found.".format(self.hex_id))
                 sys.exit(1)
 
@@ -310,6 +308,14 @@ class Window(object):
                 self.monitor=self.monitors.monitors[0]
         else:
             self.monitor=monitor
+
+        xwininfo_minimum_size=shell.cmd_get_value("xwininfo -id {} -size".format(self.hex_id))
+        for line in xwininfo_minimum_size.splitlines():
+            if "Program supplied minimum size:" in line:
+                min_width, min_height = line.split(":")[1].strip().split(" by ")
+                self.min_width=int(min_width)
+                self.min_height=int(min_height)
+
         return self
 
     def print(self):
@@ -408,7 +414,6 @@ class Window(object):
                 height=obj_geometry["height"]-self.border_top-self.border_bottom
                 height_ok=False
 
-        self.release_edges()
 
         timer=Timeout(1.5)
         tolerance=10
@@ -422,7 +427,6 @@ class Window(object):
                 height=height,
             ))
 
-            # then update geometry
             self.update_fields()
             
             if timer.has_ended():
@@ -431,38 +435,31 @@ class Window(object):
 
             if not width_ok:
                 if abs(self.width - width) > tolerance:
-                    pass_counter+=1
-                    self.release_edges()
-                    continue
+                    if self.width <= self.min_width:
+                        width_ok=True
                 else:
                     width_ok=True
             
             if not height_ok:
                 if abs(self.height - height) > tolerance:
-                    pass_counter+=1
-                    self.release_edges()
-                    continue
+                    if self.height <= self.min_height:
+                        height_ok=True
                 else:
                     height_ok=True
 
             if not x_ok:
-                if abs(self.upper_left_x - x) > tolerance:
-                    pass_counter+=1
-                    self.release_edges()
-                    continue
-                else:
+                if abs(self.upper_left_x - x) <= tolerance:
                     x_ok=True
 
             if not y_ok:
-                if abs(self.upper_left_y - y) > tolerance:
-                    pass_counter+=1
-                    self.release_edges()
-                    continue
-                else:
+                if abs(self.upper_left_y - y) <= tolerance:
                     y_ok=True
 
             if width_ok and height_ok and x_ok and y_ok:
                 break
+            else:
+                pass_counter+=1
+                self.release_edges()
             
         return self
 
@@ -486,7 +483,6 @@ class Window(object):
         r2={}
         l1={}
         l2={}
-
 
         l1["x"]=self.frame_upper_left_x
         l1["y"]=self.frame_upper_left_y
