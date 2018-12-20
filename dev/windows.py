@@ -20,14 +20,12 @@ del sys.path[0:2]
 
 class Regular_windows(object):
     def __init__(self):
-        self.hex_id=""
-        self._class=""
         self.windows=[]
         self.get_windows()
-        self.sorted_by_class()
+        self.sorted_by_exe_names()
 
     def get_windows(self):
-        command="wmctrl -lx"
+        command="wmctrl -lp"
         timer=Timeout(1.5)
         while True:
             stderr=""
@@ -54,8 +52,11 @@ class Regular_windows(object):
             if "_NET_WM_WINDOW_TYPE_NORMAL" in xprop_fields or "not found" in xprop_fields:
                 window=dict(
                     hex_id=hex_id,
-                    _class=tmp_line[2].split(".")[0],
-                    name=" ".join(tmp_line[4:])
+                    pid=int(tmp_line[2]),
+                    name=" ".join(tmp_line[4:]),
+                )
+                window.update(
+                    exe_name=shell.cmd_get_value("ps -p {} -o comm=".format(window["pid"]))
                 )
                 self.windows.append(window)
 
@@ -67,19 +68,19 @@ class Regular_windows(object):
         for window in self.windows:
             pprint(window)
 
-    def sorted_by_class(self):
-        classes=[]
+    def sorted_by_exe_names(self):
+        exe_names=[]
         for window in self.windows:
-            classes.append(window["_class"].lower())
+            exe_names.append(window["exe_name"].lower())
 
-        classes=sorted(set(classes))
+        exe_names=sorted(set(exe_names))
 
         tmp_windows=[]
-        for _class in classes:
+        for exe_name in exe_names:
             tmp_names=[]
             tmp_indexes=[]
             for w, window in enumerate(self.windows):
-                if window["_class"].lower() == _class:
+                if window["exe_name"].lower() == exe_name:
                     tmp_indexes.append(w)                        
                     tmp_names.append(window["name"].lower())
 
@@ -117,7 +118,6 @@ def bubble_sort_array(array, size):
 
     return index_array
     
-
 class Taskbar(object):
     def __init__(self):
         self.upper_left_x=""
