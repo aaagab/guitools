@@ -39,6 +39,7 @@ class Regular_windows(object):
     def __init__(self):
         self.windows=[]
         self.get_windows()
+        self.sorted_by_exe_names()
 
     def get_windows(self):
         command="wmctrl -lp"
