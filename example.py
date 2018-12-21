@@ -26,8 +26,6 @@ timer=Timeout(0)
 Regular_windows().print()
 print(timer.get_elapsed_time())
 
-sys.exit()
-
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 hex_id=Windows.get_window_hex_id_from_pid(proc.pid)
