@@ -32,6 +32,7 @@ def get_exe_paths_from_pid(pid):
 
     if filenpa_exe[0] != os.sep:
         filenpa_exe=shutil.which(filenpa_exe)
+        command=exe_name+command[len(exe_name):]
 
     return exe_name, command, filenpa_exe
 
