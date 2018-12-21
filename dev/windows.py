@@ -42,7 +42,7 @@ class Regular_windows(object):
         self.sorted_by_exe_names()
 
     def get_windows(self):
-        command="wmctrl -lp"
+        command="wmctrl -lpx"
         timer=Timeout(1.5)
         while True:
             stderr=""
@@ -70,7 +70,8 @@ class Regular_windows(object):
                 window=dict(
                     hex_id=hex_id,
                     pid=int(tmp_line[2]),
-                    name=" ".join(tmp_line[4:]),
+                    _class=tmp_line[3].split(".")[0],
+                    name=" ".join(tmp_line[5:]),
                 )
 
                 exe_name, command, filenpa_exe = get_exe_paths_from_pid(window["pid"])
