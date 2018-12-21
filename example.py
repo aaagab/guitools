@@ -25,6 +25,7 @@ deps(conf.data["deps"])
 timer=Timeout(0)
 Regular_windows().print()
 print(timer.get_elapsed_time())
+sys.exit()
 
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
