@@ -57,7 +57,7 @@ class Regular_windows(object):
             if stdout:
                 break
 
-            if timer.has_passed():
+            if timer.has_ended():
                 msg.user_error("Can't get window list from wmctrl")
                 sys.exit(1)
 
@@ -518,12 +518,19 @@ class Window(object):
         
         if monitor_index is None:
             monitors=self.monitors.monitors
+            monitor_index=0
         else:
             if monitor_index in range(0, len(self.monitors.monitors)):
                 monitors.append(self.monitors.monitors[monitor_index])
+                monitor_index=monitor_index
             else:
                 monitors.append(self.monitors.monitors[0])
-            
+                monitor_index=0
+
+        if direction == "maximize":
+            self.maximize(monitor_index)
+            return
+        
         tiles=[]
         for monitor in monitors:
             tiles.extend(monitor.get_tiles(2, 1, True))
