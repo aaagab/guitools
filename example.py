@@ -22,15 +22,36 @@ del sys.path[0:2]
 conf=Json_config()
 deps(conf.data["deps"])
 
+executable=xdginfo('.')[1]
+proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+hex_id=Windows.get_window_hex_id_from_pid(proc.pid) # careful with this function as several different windows can share the same pid (ie: firefox, chrome, code)
+window=Window(hex_id)
+print(window.pid)
+
+# window.tile("left")
+# window.ptr.set_relative_coords(200,50)
+# time.sleep(2)
+
+# window.tile("right")
+# window.ptr.set_relative_coords(200,50)
+# time.sleep(2)
+
+window.kbd.key("Menu")
+time.sleep(1)
+window.kbd.key("Escape")
+time.sleep(1)
+window.kbd.key("Ctrl+l")
+window.kbd.type("/data/bin")
+time.sleep(1)
+window.kbd.key("Escape")
+
+# time.sleep(2)
+# window.close()
+# sys.exit()
+
 timer=Timeout(0)
 Regular_windows().print()
 print(timer.get_elapsed_time())
-
-executable=xdginfo('.')[1]
-proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-hex_id=Windows.get_window_hex_id_from_pid(proc.pid)
-window=Window(hex_id)
-print(window.pid)
 
 window.tile("left",0)
 print(window.get_tile())
