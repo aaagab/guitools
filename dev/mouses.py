@@ -18,55 +18,89 @@ import re
 from pprint import pprint
 
 class Mouse(object):
-    def __init__(self):
-        pass
+    def __init__(self, win_dec_id="", win_frame_upper_left_x="", win_frame_upper_left_y=""):
+        self.win_dec_id=win_dec_id
+        self.x=""
+        self.y=""
+        self.xy=""
+        self.rx=""
+        self.ry=""
+        self.rxy=""
 
     def get_x(self):
-        return self.get_coords()[0]
+        return self.update_coords()[0]
 
     def get_y(self):
-        return self.get_coords()[1]
+        return self.update_coords()[1]
 
-    def get_coords(self):
-        for line in shell.cmd_get_value("xdotool getmouselocation").splitlines():
-            for elem in line.split():
-                attrs=elem.split(":")
-                if attrs[0] == "x":
-                    mouseX=int(attrs[1])
-                elif attrs[0] == "y":
-                    mouseY=int(attrs[1])
+    def update_coords(self):
+        if self.win_dec_id == "":
+            for line in shell.cmd_get_value("xdotool getmouselocation").splitlines():
+                for elem in line.split():
+                    attrs=elem.split(":")
+                    if attrs[0] == "x":
+                        self.x=int(attrs[1])
+                    elif attrs[0] == "y":
+                        self.y=int(attrs[1])
 
-        return [mouseX, mouseY]
+            self.xy=[self.x, self.y]
+
+        return self
 
     def set_coords(self, x, y):
         os.system("xdotool mousemove {} {}".format(x, y))
 
-    def click(self, btn_num):
-        os.system("xdotool click --clearmodifiers {}".format(btn_num))
+    def set_relative_coords(self, x, y, base_x="", base_y=""):
+        dst_x = dst_y = ""
+        if self.win_dec_id != "":
+            if base_x != "" and base_y != "":
+                dst_x=self.rx+base_x+int(x)
+                dst_y=self.ry+base_y+int(y)
+            else:
+                dst_x=self.rx+int(x)
+                dst_y=self.ry+int(y)
+        else:
+            self.update_coords()
+            if base_x != "" and base_y != "":
+                dst_x=base_x+int(x)
+                dst_y=base_y+int(y)
+            else:
+                dst_x=self.x+int(x)
+                dst_y=self.y+int(y)
+        
+        os.system("xdotool mousemove {} {}".format(dst_x, dst_y))
 
-    def left_click(self):
-        self.click(1)
+    def click(self, btn_num, win_dec_id=""):
+        if win_dec_id != "":
+            os.system("xdotool click --clearmodifiers --window {} {}".format(win_dec_id, btn_num))
+        elif self.win_dec_id != "":
+            os.system("xdotool click --clearmodifiers --window {} {}".format(self.win_dec_id, btn_num))
+        else:
+            os.system("xdotool click --clearmodifiers {}".format(btn_num))
 
-    def middle_click(self):
-        self.click(2)
+    def left_click(self, win_dec_id=""):
+        self.click(1, win_dec_id)
 
-    def right_click(self):
-        self.click(3)
+    def middle_click(self, win_dec_id=""):
+        self.click(2, win_dec_id)
 
-    def scrollup(self):
-        self.click(4)
+    def right_click(self, win_dec_id=""):
+        self.click(3, win_dec_id)
 
-    def scrolldown(self):
-        self.click(5)
+    def scrollup(self, win_dec_id=""):
+        self.click(4, win_dec_id)
 
-    def double_click(self):
-        self.click(1)
+    def scrolldown(self, win_dec_id=""):
+        self.click(5, win_dec_id)
+
+    def double_click(self, win_dec_id=""):
+        self.click(1, win_dec_id)
         time.sleep(.1)
-        self.click(1)
+        self.click(1, win_dec_id)
 
-    def triple_click(self):
-        self.click(1)
+    def triple_click(self, win_dec_id=""):
+        self.click(1, win_dec_id)
         time.sleep(.1)
-        self.click(1)
+        self.click(1, win_dec_id)
         time.sleep(.1)
-        self.click(1)
+        self.click(1, win_dec_id)

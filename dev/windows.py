@@ -16,6 +16,8 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import modules.shell_helpers.shell_helpers as shell
 import modules.message.message as msg
 from modules.timeout.timeout import Timeout
+from dev.mouses import Mouse
+from dev.keyboards import Keyboard
 import shutil
 del sys.path[0:2]
 
@@ -204,6 +206,8 @@ class Window(object):
         self.monitors=self.get_monitors()
         self.min_width=50
         self.min_height=50
+        self.ptr=Mouse()
+        self.kbd=Keyboard()
 
         if hex_id:
             self.hex_id=hex(int(hex_id, 16))
@@ -301,6 +305,12 @@ class Window(object):
         self.frame_upper_left_x=self.upper_left_x-self.border_left
         self.frame_upper_left_y=self.upper_left_y-self.border_top
 
+        # Mouse and kdb setup
+        self.ptr.rx=self.upper_left_x
+        self.ptr.ry=self.upper_left_y
+        self.ptr.win_dec_id=self.dec_id
+        self.kbd.win_dec_id=self.dec_id
+        
         if self.pid != 0 and self.pid != "":
             self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid)
 
@@ -415,7 +425,6 @@ class Window(object):
             if "height" in obj_geometry:
                 height=obj_geometry["height"]-self.border_top-self.border_bottom
                 height_ok=False
-
 
         timer=Timeout(1.5)
         tolerance=10
