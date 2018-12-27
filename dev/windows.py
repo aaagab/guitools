@@ -179,6 +179,47 @@ class Taskbars(object):
                 taskbar.height=int(line[6])
                 self.taskbars.append(taskbar)
 
+class Window_open(object):
+    def __init__(self):
+        self.is_existing_window=""
+        self.window=""
+
+    def execute(self, cmd):
+        self.is_existing_window=False
+        self.window=""
+
+        existing_windows=Regular_windows().windows
+        existing_hex_ids=[win["hex_id"] for win in existing_windows]
+        desktop_hex_id=Windows.show_desktop()
+
+        proc=subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        timer=Timeout(3, .3)
+        hex_id=""
+        while not hex_id:
+            active_hex_id=Windows.get_active_hex_id()
+            if active_hex_id != desktop_hex_id:
+                if active_hex_id in existing_hex_ids:
+                    self.is_existing_window=True
+                hex_id=active_hex_id
+                break
+            
+            tmp_existing_windows=Regular_windows().windows
+            tmp_existing_hex_ids=[win["hex_id"] for win in tmp_existing_windows]
+            hex_id=(set(tmp_existing_hex_ids) - set(existing_hex_ids))
+            if hex_id:
+                break
+
+            if timer.has_ended():
+                return False
+
+        if isinstance(hex_id, set):
+            hex_id=list(hex_id)[0]
+
+        self.window=Window(hex_id)
+
+        return True
+
 class Window(object):
     def __init__(self, hex_id=""):
         self.type=""
@@ -664,7 +705,31 @@ class Windows(object):
             return ""
         else:
             return Window().update_fields(hex_id)
-    
+
+    @staticmethod
+    def get_desktop_status():
+        desktop_info=shell.cmd_get_value("wmctrl -m")
+        desktop_status=""
+        if "mode: ON" in desktop_info:
+            desktop_status="on"
+        elif "mode: OFF" in desktop_info:
+            desktop_status="off"
+
+        return desktop_status
+
+    @staticmethod
+    def show_desktop(on_off="on"):
+        timer=Timeout(10)
+        while Windows.get_desktop_status() != on_off.lower():
+            os.system("wmctrl -k {}".format(on_off))
+            if timer.has_ended():
+                msg.app_error("Impossible to set show_desktop '{}'".format(on_off))
+                sys.exit()
+            time.sleep(.01)
+
+        return Windows.get_active_hex_id()
+
+
     @staticmethod
     def get_window_hex_id_from_pid(pid):
         command="wmctrl -lp"

@@ -7,6 +7,7 @@ from pprint import pprint
 import sys, os
 import time
 import shlex
+import subprocess
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -21,6 +22,20 @@ del sys.path[0:2]
 
 conf=Json_config()
 deps(conf.data["deps"])
+
+# keep this part commented ####################
+# launch_window=Window_open()
+# print(launch_window.execute("code --new-window /data/projs/apps/dt/python/guitools/"))
+# print(launch_window.window.name)
+# print(launch_window.is_existing_window)
+# print(launch_window.execute("firefox"))
+# print(launch_window.window.name)
+# print(launch_window.is_existing_window)
+
+# while not launch_window.execute("ls -l"):
+#     user_input=input("Do you want to continue(y/n): ")
+#     if user_input == "n":
+#         break
 
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
