@@ -183,13 +183,15 @@ class Window_open(object):
     def __init__(self):
         self.is_existing_window=""
         self.window=""
+        self.existing_hex_ids=[]
 
-    def execute(self, cmd):
+    def execute(self, cmd, new=False):
         self.is_existing_window=False
         self.window=""
 
-        existing_windows=Regular_windows().windows
-        existing_hex_ids=[win["hex_id"] for win in existing_windows]
+        # existing_windows=Regular_windows().windows
+        if not self.existing_hex_ids or new:
+            self.existing_hex_ids=[win["hex_id"] for win in Regular_windows().windows]
         desktop_hex_id=Windows.show_desktop()
 
         proc=subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -217,6 +219,7 @@ class Window_open(object):
             hex_id=list(hex_id)[0]
 
         self.window=Window(hex_id)
+        self.existing_hex_ids=[]
 
         return True
 
