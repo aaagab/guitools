@@ -201,14 +201,14 @@ class Window_open(object):
         while not hex_id:
             active_hex_id=Windows.get_active_hex_id()
             if active_hex_id != desktop_hex_id:
-                if active_hex_id in existing_hex_ids:
+                if active_hex_id in self.existing_hex_ids:
                     self.is_existing_window=True
                 hex_id=active_hex_id
                 break
             
             tmp_existing_windows=Regular_windows().windows
             tmp_existing_hex_ids=[win["hex_id"] for win in tmp_existing_windows]
-            hex_id=(set(tmp_existing_hex_ids) - set(existing_hex_ids))
+            hex_id=(set(tmp_existing_hex_ids) - set(self.existing_hex_ids))
             if hex_id:
                 break
 
