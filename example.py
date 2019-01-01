@@ -9,6 +9,7 @@ import time
 import shlex
 import subprocess
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
@@ -18,24 +19,31 @@ from modules.json_config.json_config import Json_config
 from modules.xdginfo.xdginfo import xdginfo
 from modules.timeout.timeout import Timeout
 
-del sys.path[0:2]
+del sys.path[0:3]
 
 conf=Json_config()
 deps(conf.data["deps"])
 
 # keep this part commented ####################
-# launch_window=Window_open()
-# print(launch_window.execute("code --new-window /data/projs/apps/dt/python/guitools/"))
-# print(launch_window.window.name)
-# print(launch_window.is_existing_window)
-# print(launch_window.execute("firefox"))
-# print(launch_window.window.name)
-# print(launch_window.is_existing_window)
 
-# while not launch_window.execute("ls -l"):
+# launch_window=Window_open("firefox")
+# while not launch_window.has_window():
 #     user_input=input("Do you want to continue(y/n): ")
 #     if user_input == "n":
 #         break
+# print(launch_window.window.name)
+# print(launch_window.is_existing_window)
+
+# launch_window=Window_open("code --new-window /data/projs/apps/dt/python/guitools/")
+# print(launch_window.window.name)
+# print(launch_window.is_existing_window)
+
+# launch_window=Window_open("ls -l")
+# while not launch_window.has_window():
+#     user_input=input("Do you want to continue(y/n): ")
+#     if user_input == "n":
+#         break
+# sys.exit()
 
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

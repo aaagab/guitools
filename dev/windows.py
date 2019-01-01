@@ -41,6 +41,7 @@ def get_exe_paths_from_pid(pid):
 class Regular_windows(object):
     def __init__(self):
         self.windows=[]
+        self.desktop_hex_ids=[]
         self.get_windows()
         self.sorted_by_exe_names()
 
@@ -86,10 +87,18 @@ class Regular_windows(object):
                 )
 
                 self.windows.append(window)
+            if "_NET_WM_WINDOW_TYPE_DESKTOP" in xprop_fields:
+                self.desktop_hex_ids.append(hex_id)
+            
         
     @staticmethod
     def focus(hex_id):
         shell.cmd("wmctrl -i -a {}".format(hex_id))
+    
+    @staticmethod
+    def minimize(hex_id):
+        dec_id=int(hex_id, 16)
+        os.system("xdotool windowminimize {}".format(dec_id))
 
     def print(self):
         for window in self.windows:
@@ -180,36 +189,44 @@ class Taskbars(object):
                 self.taskbars.append(taskbar)
 
 class Window_open(object):
-    def __init__(self):
+    def __init__(self, cmd):
         self.is_existing_window=""
         self.window=""
         self.existing_hex_ids=[]
+        self.execute(cmd)
+        self.existing_windows=[]
 
-    def execute(self, cmd, new=False):
+    def execute(self, cmd):
         self.is_existing_window=False
         self.window=""
+        self.existing_windows_obj=Regular_windows()
+        self.existing_hex_ids=[win["hex_id"] for win in self.existing_windows_obj.windows]
+        self.desktop_hex_ids=[hex_id for hex_id in self.existing_windows_obj.desktop_hex_ids]
+        
+        subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        self.has_window()
+        return self
 
-        # existing_windows=Regular_windows().windows
-        if not self.existing_hex_ids or new:
-            self.existing_hex_ids=[win["hex_id"] for win in Regular_windows().windows]
+    def has_window(self):
+        if self.window:
+            return True
+
         desktop_hex_id=Windows.show_desktop()
-
-        proc=subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         timer=Timeout(3, .3)
         hex_id=""
         while not hex_id:
+            tmp_existing_windows=Regular_windows().windows
+            tmp_existing_hex_ids=[win["hex_id"] for win in tmp_existing_windows]
+            hex_id=(set(tmp_existing_hex_ids) - set(self.existing_hex_ids))
+            if hex_id:
+                break
+
             active_hex_id=Windows.get_active_hex_id()
             if active_hex_id != desktop_hex_id:
                 if active_hex_id in self.existing_hex_ids:
                     self.is_existing_window=True
                 hex_id=active_hex_id
-                break
-            
-            tmp_existing_windows=Regular_windows().windows
-            tmp_existing_hex_ids=[win["hex_id"] for win in tmp_existing_windows]
-            hex_id=(set(tmp_existing_hex_ids) - set(self.existing_hex_ids))
-            if hex_id:
                 break
 
             if timer.has_ended():
