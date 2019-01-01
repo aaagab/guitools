@@ -89,7 +89,6 @@ class Regular_windows(object):
                 self.windows.append(window)
             if "_NET_WM_WINDOW_TYPE_DESKTOP" in xprop_fields:
                 self.desktop_hex_ids.append(hex_id)
-            
         
     @staticmethod
     def focus(hex_id):
