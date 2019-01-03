@@ -24,6 +24,9 @@ del sys.path[0:3]
 conf=Json_config()
 deps(conf.data["deps"])
 
+# cmd_filter_bad_window("wmctrl -i -a 0x00600005")
+# cmd_filter_bad_window("wmctrl -l")
+
 # keep this part commented ####################
 
 # launch_window=Window_open("firefox")
@@ -47,17 +50,18 @@ deps(conf.data["deps"])
 
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+print(proc.pid)
 hex_id=Windows.get_window_hex_id_from_pid(proc.pid) # careful with this function as several different windows can share the same pid (ie: firefox, chrome, code)
 window=Window(hex_id)
-print(window.pid)
+window.print()
 
-# window.tile("left")
-# window.ptr.set_relative_coords(200,50)
-# time.sleep(2)
+window.tile("left")
+window.ptr.set_relative_coords(200,50)
+time.sleep(2)
 
-# window.tile("right")
-# window.ptr.set_relative_coords(200,50)
-# time.sleep(2)
+window.tile("right")
+window.ptr.set_relative_coords(200,50)
+time.sleep(2)
 
 window.kbd.key("Menu")
 time.sleep(1)
@@ -67,10 +71,6 @@ window.kbd.key("Ctrl+l")
 window.kbd.type("/data/bin")
 time.sleep(1)
 window.kbd.key("Escape")
-
-# time.sleep(2)
-# window.close()
-# sys.exit()
 
 timer=Timeout(0)
 Regular_windows().print()
