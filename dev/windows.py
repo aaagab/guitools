@@ -38,6 +38,32 @@ def get_exe_paths_from_pid(pid):
 
     return exe_name, command, filenpa_exe
 
+def cmd_filter_bad_window(command, get_stdout=True):
+    timer=Timeout(3)
+    while True:
+        if timer.has_ended():
+            msg.app_error("Can't get output from cmd '{}'".format(command))
+            sys.exit(1)
+
+        stderr=""
+        process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        ( stdout, stderr ) = process.communicate()
+        if stderr:
+            if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
+                msg.app_error("cmd: '{}' failed".format(command))
+                sys.exit(1)
+            else:
+                if "xprop -id" in command:
+                    return "BadWindow"
+                else:
+                    continue
+    
+        if stdout:
+            return stdout.decode("utf-8").rstrip()
+        
+        if not get_stdout:
+            break
+
 class Regular_windows(object):
     def __init__(self):
         self.windows=[]
@@ -46,53 +72,44 @@ class Regular_windows(object):
         self.sorted_by_exe_names()
 
     def get_windows(self):
-        command="wmctrl -lpx"
-        timer=Timeout(1.5)
-        while True:
-            stderr=""
-            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            ( stdout, stderr ) = process.communicate()
-            if stderr:
-                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
-                    msg.app_error("cmd: '{}' failed".format(command))
-                    sys.exit(1)
+        xprop_fields=""
+        while not xprop_fields:
+            self.windows=[]
+            self.desktop_hex_ids=[]
 
-            if stdout:
-                break
+            window_ids=cmd_filter_bad_window("wmctrl -lpx")
 
-            if timer.has_ended():
-                msg.user_error("Can't get window list from wmctrl")
-                sys.exit(1)
+            for line in window_ids.splitlines():
+                tmp_line=re.sub(' +', ' ', line.strip()).split(" ")
+                hex_id=hex(int(tmp_line[0], 16))
+                xprop_fields=cmd_filter_bad_window("xprop -id {} _NET_WM_WINDOW_TYPE".format(hex_id))
+                if xprop_fields == "BadWindow":
+                    xprop_fields=""
+                    break
 
-        window_ids=stdout.decode("utf-8").rstrip()
+                if "_NET_WM_WINDOW_TYPE_NORMAL" in xprop_fields or "not found" in xprop_fields:
+                    window=dict(
+                        hex_id=hex_id,
+                        pid=int(tmp_line[2]),
+                        _class=tmp_line[3].split(".")[0],
+                        name=" ".join(tmp_line[5:]),
+                    )
 
-        for line in window_ids.splitlines():
-            tmp_line=re.sub(' +', ' ', line.strip()).split(" ")
-            hex_id=hex(int(tmp_line[0], 16))
-            xprop_fields=output=shell.cmd_get_value("xprop -id {} _NET_WM_WINDOW_TYPE".format(hex_id))
-            if "_NET_WM_WINDOW_TYPE_NORMAL" in xprop_fields or "not found" in xprop_fields:
-                window=dict(
-                    hex_id=hex_id,
-                    pid=int(tmp_line[2]),
-                    _class=tmp_line[3].split(".")[0],
-                    name=" ".join(tmp_line[5:]),
-                )
+                    exe_name, command, filenpa_exe = get_exe_paths_from_pid(window["pid"])
 
-                exe_name, command, filenpa_exe = get_exe_paths_from_pid(window["pid"])
+                    window.update(
+                        exe_name=exe_name,
+                        command=command,
+                        filenpa_exe=filenpa_exe
+                    )
 
-                window.update(
-                    exe_name=exe_name,
-                    command=command,
-                    filenpa_exe=filenpa_exe
-                )
-
-                self.windows.append(window)
-            if "_NET_WM_WINDOW_TYPE_DESKTOP" in xprop_fields:
-                self.desktop_hex_ids.append(hex_id)
+                    self.windows.append(window)
+                if "_NET_WM_WINDOW_TYPE_DESKTOP" in xprop_fields:
+                    self.desktop_hex_ids.append(hex_id)
         
     @staticmethod
     def focus(hex_id):
-        shell.cmd("wmctrl -i -a {}".format(hex_id))
+        cmd_filter_bad_window("wmctrl -i -a {}".format(hex_id), False)
     
     @staticmethod
     def minimize(hex_id):
@@ -162,30 +179,27 @@ class Taskbar(object):
 
 class Taskbars(object):
     def __init__(self):
-        self.taskbars=[]
-        command="wmctrl -lGpx"
-        stderr="start"
-        while stderr:
-            stderr=""
-            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            ( stdout, stderr ) = process.communicate()
-            if stderr:
-                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
-                    msg.app_error("cmd: '{}' failed".format(command))
-                    sys.exit(1)
+        xprop_fields=""
+        while not xprop_fields:
+            self.taskbars=[]
+        
+            window_ids=cmd_filter_bad_window("wmctrl -lGpx")
+            for line in window_ids.splitlines():
+                line=re.sub(r" +", " ", line.strip()).split(" ")
+                hex_id=hex(int(line[0], 16))
 
-        window_ids=stdout.decode("utf-8").rstrip()
-        for line in window_ids.splitlines():
-            line=re.sub(r" +", " ", line.strip()).split(" ")
-            hex_id=hex(int(line[0], 16))
-            xprop_fields=output=shell.cmd_get_value("xprop -id {} _NET_WM_WINDOW_TYPE".format(hex_id))
-            if "_NET_WM_WINDOW_TYPE_DOCK" in xprop_fields:
-                taskbar=Taskbar()
-                taskbar.upper_left_x=int(line[3])
-                taskbar.upper_left_y=int(line[4])
-                taskbar.width=int(line[5])
-                taskbar.height=int(line[6])
-                self.taskbars.append(taskbar)
+                xprop_fields=cmd_filter_bad_window("xprop -id {} _NET_WM_WINDOW_TYPE".format(hex_id))
+                if xprop_fields == "BadWindow":
+                    xprop_fields=""
+                    break
+
+                if "_NET_WM_WINDOW_TYPE_DOCK" in xprop_fields:
+                    taskbar=Taskbar()
+                    taskbar.upper_left_x=int(line[3])
+                    taskbar.upper_left_y=int(line[4])
+                    taskbar.width=int(line[5])
+                    taskbar.height=int(line[6])
+                    self.taskbars.append(taskbar)
 
 class Window_open(object):
     def __init__(self, cmd):
@@ -283,127 +297,134 @@ class Window(object):
 
         window=""
         timer=Timeout(2)
-        while True:
-            wmctrl_fields=shell.cmd_get_value("wmctrl -lGpx")
-            for line in wmctrl_fields.splitlines():
-                hex_id=hex(int(line.split(" ")[0].strip(),16))
-                if hex_id == self.hex_id:
-                    window=line
+
+        xprop_fields=""
+        while not xprop_fields:
+            while True:
+                wmctrl_fields=cmd_filter_bad_window("wmctrl -lGpx")
+                for line in wmctrl_fields.splitlines():
+                    hex_id=hex(int(line.split(" ")[0].strip(),16))
+                    if hex_id == self.hex_id:
+                        window=line
+                        break
+                
+                if window:
                     break
-            
-            if window:
-                break
-            
-            if timer.has_ended():
-                msg.user_error("Window with id '{}' not found.".format(self.hex_id))
-                sys.exit(1)
+                
+                if timer.has_ended():
+                    msg.user_error("Window with id '{}' not found.".format(self.hex_id))
+                    sys.exit(1)
 
-        divider=True
-        field=""
-        fields=[]
-        num_fields=10
-        field_num=1
-        last_field_started=False
-        for i, c in enumerate(window):
-            if i == 0:
-                field+=c
-            elif i < len(window)-1:
-                if field_num < num_fields:
-                    if c == " ":
-                        if not window[i-1] == " ":
-                            fields.append(field)
-                            field_num+=1
-                            field=""
-                    else:
+            divider=True
+            field=""
+            fields=[]
+            num_fields=10
+            field_num=1
+            last_field_started=False
+            for i, c in enumerate(window):
+                if i == 0:
+                    field+=c
+                elif i < len(window)-1:
+                    if field_num < num_fields:
+                        if c == " ":
+                            if not window[i-1] == " ":
+                                fields.append(field)
+                                field_num+=1
+                                field=""
+                        else:
 
-                        field+=c
-                else:
-                    if last_field_started:
-                        field+=c
-                    else:
-                        if c != " ":
-                            last_field_started=True
                             field+=c
-            else:
-                field+=c
-                fields.append(field)
-                field_num+=1
-                field=""
-
-        self.hex_id=hex(int(fields[0],16))
-        self.dec_id=int(fields[0], 16)
-        self.sticky=True if fields[1] == "-1" else False
-        self.pid=int(fields[2])
-        self.upper_left_x=int(fields[3])
-        self.upper_left_y=int(fields[4])
-        self.width=int(fields[5])
-        self.height=int(fields[6])
-        self.class_long=fields[7]
-        self._class=fields[7].split(".")[0]
-        self.hostname=fields[8]
-        self.name=fields[9]
-
-        xprop_fields=output=shell.cmd_get_value("xprop -id {} _NET_FRAME_EXTENTS _NET_WM_WINDOW_TYPE".format(self.hex_id))
-        for line in xprop_fields.splitlines():
-            line=line.replace(":", "=")
-            if "=" in line:
-                field, value = line.split("=")
-                value=value.strip()
-                if "_NET_FRAME_EXTENTS" in field:
-                    if value != "not found.":
-                        borders=value.replace(" ","").split(",")
-                        borders=list(map(int, borders))
-                        self.border_left, self.border_right, self.border_top, self.border_bottom = borders
-                elif "_NET_WM_WINDOW_TYPE" in field:
-                    if value != "not found.":
-                        self.type= value
                     else:
-                        self.type="UNKNOWN"
+                        if last_field_started:
+                            field+=c
+                        else:
+                            if c != " ":
+                                last_field_started=True
+                                field+=c
+                else:
+                    field+=c
+                    fields.append(field)
+                    field_num+=1
+                    field=""
 
-        self.frame_width=self.width+self.border_left+self.border_right
-        self.frame_height=self.height+self.border_top+self.border_bottom
-        self.frame_upper_left_x=self.upper_left_x-self.border_left
-        self.frame_upper_left_y=self.upper_left_y-self.border_top
+            self.hex_id=hex(int(fields[0],16))
+            self.dec_id=int(fields[0], 16)
+            self.sticky=True if fields[1] == "-1" else False
+            self.pid=int(fields[2])
+            self.upper_left_x=int(fields[3])
+            self.upper_left_y=int(fields[4])
+            self.width=int(fields[5])
+            self.height=int(fields[6])
+            self.class_long=fields[7]
+            self._class=fields[7].split(".")[0]
+            self.hostname=fields[8]
+            self.name=fields[9]
 
-        # Mouse and kdb setup
-        self.ptr.rx=self.upper_left_x
-        self.ptr.ry=self.upper_left_y
-        self.ptr.win_dec_id=self.dec_id
-        self.kbd.win_dec_id=self.dec_id
-        
-        if self.pid != 0 and self.pid != "":
-            self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid)
+            xprop_fields=cmd_filter_bad_window("xprop -id {} _NET_FRAME_EXTENTS _NET_WM_WINDOW_TYPE".format(self.hex_id))
+            if xprop_fields == "BadWindow":
+                xprop_fields=""
+                continue
 
-        if not monitor:
-            self.monitor=self.monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
-            if not self.monitor:
-                self.monitor=self.monitors.monitors[0]
-        else:
-            self.monitor=monitor
+            for line in xprop_fields.splitlines():
+                line=line.replace(":", "=")
+                if "=" in line:
+                    field, value = line.split("=")
+                    value=value.strip()
+                    if "_NET_FRAME_EXTENTS" in field:
+                        if value != "not found.":
+                            borders=value.replace(" ","").split(",")
+                            borders=list(map(int, borders))
+                            self.border_left, self.border_right, self.border_top, self.border_bottom = borders
+                    elif "_NET_WM_WINDOW_TYPE" in field:
+                        if value != "not found.":
+                            self.type= value
+                        else:
+                            self.type="UNKNOWN"
 
-        xwininfo_minimum_size=shell.cmd_get_value("xwininfo -id {} -size".format(self.hex_id))
-        for line in xwininfo_minimum_size.splitlines():
-            if "Program supplied minimum size:" in line:
-                min_width, min_height = line.split(":")[1].strip().split(" by ")
-                self.min_width=int(min_width)
-                self.min_height=int(min_height)
+            self.frame_width=self.width+self.border_left+self.border_right
+            self.frame_height=self.height+self.border_top+self.border_bottom
+            self.frame_upper_left_x=self.upper_left_x-self.border_left
+            self.frame_upper_left_y=self.upper_left_y-self.border_top
 
-        return self
+            # Mouse and kdb setup
+            self.ptr.rx=self.upper_left_x
+            self.ptr.ry=self.upper_left_y
+            self.ptr.win_dec_id=self.dec_id
+            self.kbd.win_dec_id=self.dec_id
+            
+            if self.pid != 0 and self.pid != "":
+                self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid)
+
+            if not monitor:
+                self.monitor=self.monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
+                if not self.monitor:
+                    self.monitor=self.monitors.monitors[0]
+            else:
+                self.monitor=monitor
+
+            xwininfo_minimum_size=cmd_filter_bad_window("xwininfo -id {} -size".format(self.hex_id))
+            for line in xwininfo_minimum_size.splitlines():
+                if "Program supplied minimum size:" in line:
+                    min_width, min_height = line.split(":")[1].strip().split(" by ")
+                    self.min_width=int(min_width)
+                    self.min_height=int(min_height)
+
+            return self
 
     def print(self):
         pprint(vars(self))
         return self
 
     def focus(self):
-        shell.cmd("wmctrl -i -a {}".format(self.hex_id))
+        cmd_filter_bad_window("wmctrl -i -a {}".format(self.hex_id), False)
         return self
 
     def set_above(self):
-        shell.cmd("wmctrl -i -r {} -b add,above".format(self.hex_id))
+        cmd_filter_bad_window("wmctrl -i -r {} -b add,above".format(self.hex_id), False)
         return self
     
     def unset_above(self):
-        shell.cmd("wmctrl -i -r {} -b remove,above".format(self.hex_id))
+        cmd_filter_bad_window("wmctrl -i -r {} -b remove,above".format(self.hex_id), False)
         return self
 
     def get_center_coords(self, monitor=""):
@@ -434,18 +455,7 @@ class Window(object):
         return self
 
     def exists(self):
-        command="wmctrl -l"
-        stderr="start"
-        while stderr:
-            stderr=""
-            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            ( stdout, stderr ) = process.communicate()
-            if stderr:
-                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
-                    msg.app_error("cmd: '{}' failed".format(command))
-                    sys.exit(1)
-
-        window_ids=stdout.decode("utf-8").rstrip()
+        window_ids=cmd_filter_bad_window("wmctrl -l")
         for line in window_ids.splitlines():
             hex_id=hex(int(line.split(" ")[0].strip(), 16))
             if self.hex_id == hex_id:
@@ -490,13 +500,13 @@ class Window(object):
         tolerance=10
         pass_counter=0
         while True:
-            os.system("wmctrl -i -r {hex_id} -e 0,{x},{y},{width},{height}".format(
+            cmd_filter_bad_window("wmctrl -i -r {hex_id} -e 0,{x},{y},{width},{height}".format(
                 hex_id=self.hex_id,
                 x=x,
                 y=y,
                 width=width,
                 height=height,
-            ))
+            ),False)
 
             self.update_fields()
             
@@ -688,7 +698,7 @@ class Window(object):
 
 
     def minimize(self):
-        os.system("xdotool windowminimize {}".format(self.dec_id))
+        cmd_filter_bad_window("xdotool windowminimize {}".format(self.dec_id),False)
         self.update_fields()
 
     def maximize(self, monitor_index=None):
@@ -703,7 +713,7 @@ class Window(object):
 
         if monitor.index != self.monitor.index:
             self.move(monitor.upper_left_x, monitor.upper_left_y)
-        os.system("wmctrl -i -r {} -b add,maximized_vert,maximized_horz".format(self.hex_id))
+        cmd_filter_bad_window("wmctrl -i -r {} -b add,maximized_vert,maximized_horz".format(self.hex_id),False)
         self.update_fields()
 
     def center(self, monitor=""):
@@ -711,7 +721,7 @@ class Window(object):
         self.move(x, y)
 
     def close(self):
-        os.system("wmctrl -i -c {}".format(self.hex_id))
+        cmd_filter_bad_window("wmctrl -i -c {}".format(self.hex_id), False)
 
 class Windows(object):
     def __init__(self):
@@ -727,7 +737,7 @@ class Windows(object):
 
     @staticmethod
     def get_desktop_status():
-        desktop_info=shell.cmd_get_value("wmctrl -m")
+        desktop_info=cmd_filter_bad_window("wmctrl -m")
         desktop_status=""
         if "mode: ON" in desktop_info:
             desktop_status="on"
@@ -740,7 +750,7 @@ class Windows(object):
     def show_desktop(on_off="on"):
         timer=Timeout(10)
         while Windows.get_desktop_status() != on_off.lower():
-            os.system("wmctrl -k {}".format(on_off))
+            cmd_filter_bad_window("wmctrl -k {}".format(on_off), False)
             if timer.has_ended():
                 msg.app_error("Impossible to set show_desktop '{}'".format(on_off))
                 sys.exit()
@@ -748,20 +758,11 @@ class Windows(object):
 
         return Windows.get_active_hex_id()
 
-
     @staticmethod
     def get_window_hex_id_from_pid(pid):
-        command="wmctrl -lp"
-        timer=Timeout(2)
+        timer=Timeout(3)
         while True:
-            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            ( stdout, stderr ) = process.communicate()
-            if stderr:
-                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
-                    msg.app_error("cmd: '{}' failed".format(command))
-                    sys.exit(1)
-
-            window_ids=stdout.decode("utf-8").rstrip()
+            window_ids=cmd_filter_bad_window("wmctrl -lp")
 
             for line in window_ids.splitlines():
                 tmp_line=re.sub(' +', ' ', line.strip())
@@ -770,11 +771,11 @@ class Windows(object):
                 line_pid=int(tmp_line[2])
                 if pid == line_pid:
                     return hex_id
-
+            
             if timer.has_ended():
-                msg.warning("Could not get an hex_id from pid {}".format(pid))
+                msg.warning("no hex_id for pid '{}'".format(pid))
                 break
-   
+
         return ""
 
     @staticmethod
@@ -787,18 +788,7 @@ class Windows(object):
 
     @staticmethod
     def exists(hex_id):
-        command="wmctrl -l"
-        stderr="start"
-        while stderr:
-            stderr=""
-            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            ( stdout, stderr ) = process.communicate()
-            if stderr:
-                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
-                    msg.app_error("cmd: '{}' failed".format(command))
-                    sys.exit(1)
-
-        window_ids=stdout.decode("utf-8").rstrip()
+        window_ids=cmd_filter_bad_window("wmctrl -l")
         for line in window_ids.splitlines():
             line_hex_id=hex(int(line.split(" ")[0].strip(), 16))
             if hex_id == line_hex_id:
@@ -807,18 +797,7 @@ class Windows(object):
         return False
 
     def get_all_windows(self):
-        command="wmctrl -l"
-        stderr="start"
-        while stderr:
-            stderr=""
-            process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            ( stdout, stderr ) = process.communicate()
-            if stderr:
-                if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
-                    msg.app_error("cmd: '{}' failed".format(command))
-                    sys.exit(1)
-
-        window_ids=stdout.decode("utf-8").rstrip()
+        window_ids=cmd_filter_bad_window("wmctrl -l")
 
         for line in window_ids.splitlines():
             hex_id=hex(int(line.strip().split(" ")[0], 16))
