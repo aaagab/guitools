@@ -22,7 +22,8 @@ import shutil
 del sys.path[0:2]
 
 def get_exe_paths_from_pid(pid):
-    exe_name, command=shell.cmd_get_value("ps -q {} -o \"%c\" -o \":%a\" --no-headers".format(pid)).split(":")
+    values=shell.cmd_get_value("ps -q {} -o \"%c\" -o \":%a\" --no-headers".format(pid)).split(":")
+    exe_name, command=values[0], "".join(values[1:])
     exe_name=exe_name.strip()
     command=command.strip()
     filenpa_exe=""
