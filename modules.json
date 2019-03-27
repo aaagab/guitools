@@ -1,0 +1,20 @@
+{
+    "deps": {
+        "version": "1.0.0-rc-1544136127"
+    },
+    "json_config": {
+        "version": "1.0.0-rc-1544118643"
+    },
+    "message": {
+        "version": "1.0.0-rc-1544118437"
+    },
+    "shell_helpers": {
+        "version": "1.0.0-rc-1544126767"
+    },
+    "timeout": {
+        "version": "1.0.0-alpha-1545323347"
+    },
+    "xdginfo": {
+        "version": "1.0.0-rc-1545172771"
+    }
+}
