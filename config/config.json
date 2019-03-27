@@ -1,0 +1,34 @@
+{
+    "deps": [
+        {
+            "app": "x11-utils",
+            "cmd": "xprop",
+            "root": false,
+            "version": "7.7+3+b1"
+        },
+        {
+            "app": "x11-utils",
+            "cmd": "xwininfo",
+            "root": false,
+            "version": "7.7+3+b1"
+        },
+        {
+            "app": "x11-xserver-utils",
+            "cmd": "xrandr",
+            "root": false,
+            "version": "7.7+7+b1"
+        },
+        {
+            "app": "xdotool",
+            "cmd": "xdotool",
+            "root": false,
+            "version": "1:3.20160805.1-3"
+        },
+        {
+            "app": "wmctrl",
+            "cmd": "wmctrl",
+            "version": "1.07-7+b1"
+        }
+    ],
+    "version": "1.0.1"
+}
