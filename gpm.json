@@ -1,0 +1,16 @@
+{
+    "authors": [
+        "Gabriel Auger"
+    ],
+    "deps": [],
+    "description": "Wrapper for xdotool and wmctrl. Allows to programmatically controls windows size and moves and user input (keyboard and mouse).",
+    "filen_main": "guitools.py",
+    "gpm_version": "0.2.0",
+    "installer": "gpm",
+    "licenses": [
+        "MIT"
+    ],
+    "name": "guitools",
+    "uuid4": "f128844d-236e-4c1e-8537-92b2d57ffc76",
+    "version": "1.0.1"
+}
