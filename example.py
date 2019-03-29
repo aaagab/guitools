@@ -48,6 +48,9 @@ deps(conf.data["deps"])
 #         break
 # sys.exit()
 
+print("Select window with mouse click:")
+print(Window().select().name)
+
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 print(proc.pid)
