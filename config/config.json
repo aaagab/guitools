@@ -29,6 +29,5 @@
             "cmd": "wmctrl",
             "version": "1.07-7+b1"
         }
-    ],
-    "version": "1.0.1"
+    ]
 }

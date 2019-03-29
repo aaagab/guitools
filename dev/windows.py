@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.1
+# version: 1.1.0
 # name: guitools
 # license: MIT
 
@@ -287,6 +287,15 @@ class Window(object):
         if hex_id:
             self.hex_id=hex(int(hex_id, 16))
             self.update_fields()
+
+    def select(self):
+        for line in cmd_filter_bad_window("xwininfo").splitlines():
+            hex_id_raw=re.match(r".*Window id: ([^\s]+)", line)
+            if hex_id_raw:
+                self.hex_id=hex(int(hex_id_raw.group(1), 16))
+                self.update_fields()
+                break
+        return self
 
     def update_fields(self, hex_id="", monitor=""):
         if hex_id:
