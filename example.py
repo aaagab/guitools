@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.1
+# version: 1.1.0
 # name: guitools
 # license: MIT
 from pprint import pprint
@@ -47,6 +47,9 @@ deps(conf.data["deps"])
 #     if user_input == "n":
 #         break
 # sys.exit()
+
+print("Select window with mouse click:")
+print(Window().select().name)
 
 executable=xdginfo('.')[1]
 proc = subprocess.Popen(shlex.split("{} .".format(executable)), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
