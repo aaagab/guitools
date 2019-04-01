@@ -23,16 +23,16 @@ class Keyboard(object):
 
     def key(self, keys, win_dec_id=""):
         if win_dec_id:
-            os.system("xdotool key --window {} {}".format(win_dec_id, keys ))
+            os.system("xdotool key --clearmodifiers --window {} {}".format(win_dec_id, keys ))
         elif self.win_dec_id:
-            os.system("xdotool key --window {} {}".format(self.win_dec_id, keys ))
+            os.system("xdotool key --clearmodifiers --window {} {}".format(self.win_dec_id, keys ))
         else:
             os.system("xdotool key {}".format(keys))
 
     def type(self, text, win_dec_id=""):
         if win_dec_id:
-            os.system("xdotool type --window {} {}".format(win_dec_id, text ))
+            os.system("xdotool type --clearmodifiers --window {} {}".format(win_dec_id, text ))
         elif self.win_dec_id:
-            os.system("xdotool type --window {} {}".format(self.win_dec_id, text ))
+            os.system("xdotool type --clearmodifiers --window {} {}".format(self.win_dec_id, text ))
         else:
             os.system("xdotool type {}".format(text))
