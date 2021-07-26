@@ -2,7 +2,7 @@
 # author: Gabriel Auger
 # name: guitools
 # license: MIT
-__version__= "2.0.1"
+__version__= "2.0.2"
 
 import sys
 import os
@@ -13,11 +13,7 @@ from .dev.monitors import Tile, Monitor, Monitors
 from .dev.mouses import Mouse
 from .dev.windows import Windows, Taskbars, Window, Regular_windows
 
-if hasattr(sys.modules["__main__"], "__file__"):
-    direpa_main=os.path.dirname(os.path.abspath(sys.modules["__main__"].__file__))
-    direpa_file=os.path.dirname(os.path.realpath(__file__))
-    if direpa_file == direpa_main:
-        from .gpkgs.deps import deps
-        from .gpkgs.xdginfo import xdginfo
-        from .gpkgs.timeout import TimeOut
+from .gpkgs.deps import deps
+from .gpkgs.xdginfo import xdginfo
+from .gpkgs.timeout import TimeOut
 
