@@ -1,0 +1,18 @@
+{
+    "authors": [
+        "Gabriel Auger"
+    ],
+    "deps": [
+        "cf09346e-b436-4259-b6dd-e56516b508a5|message|5.0.7|gpm"
+    ],
+    "description": "Wrapper to invoke shell commands",
+    "filen_main": "__init__.py",
+    "gpm_version": "0.2.0",
+    "installer": "gpm",
+    "licenses": [
+        "MIT"
+    ],
+    "name": "shell_helpers",
+    "uuid4": "df328dbe-54ab-4a6d-b7a2-932b0eaee30a",
+    "version": "5.4.1"
+}

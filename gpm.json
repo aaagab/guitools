@@ -2,7 +2,13 @@
     "authors": [
         "Gabriel Auger"
     ],
-    "deps": [],
+    "deps": [
+        "d233ff24-cdf5-4ef4-8a45-4ca42b6f6c98|deps|2.0.2|gpm",
+        "cf09346e-b436-4259-b6dd-e56516b508a5|message|8.1.2|gpm",
+        "df328dbe-54ab-4a6d-b7a2-932b0eaee30a|shell_helpers|5.4.1|gpm",
+        "01f987df-3241-4c49-9fec-049aa0a8701c|timeout|3.0.1|gpm",
+        "2c23dd7d-af84-421f-a443-825e8c7159fa|xdginfo|2.0.1|gpm"
+    ],
     "description": "Wrapper for xdotool and wmctrl. Allows to programmatically controls windows size and moves and user input (keyboard and mouse).",
     "filen_main": "guitools.py",
     "gpm_version": "0.2.0",

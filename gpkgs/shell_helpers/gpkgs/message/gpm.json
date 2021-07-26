@@ -1,0 +1,18 @@
+{
+    "authors": [
+        "Gabriel Auger"
+    ],
+    "deps": [
+        "a30e109e-650f-4636-83e4-e18320c60788|format_text|0.3.1|gpm"
+    ],
+    "description": "Simple tui library for python",
+    "filen_main": "__init__.py",
+    "gpm_version": "0.1.0",
+    "installer": "gpm",
+    "licenses": [
+        "MIT"
+    ],
+    "name": "message",
+    "uuid4": "cf09346e-b436-4259-b6dd-e56516b508a5",
+    "version": "5.0.7"
+}

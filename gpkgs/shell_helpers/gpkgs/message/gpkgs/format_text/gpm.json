@@ -1,0 +1,16 @@
+{
+    "authors": [
+        "Gabriel Auger"
+    ],
+    "deps": [],
+    "description": "Terminal ANSI Formatting utility",
+    "filen_main": "__init__.py",
+    "gpm_version": "0.2.0",
+    "installer": "gpm",
+    "licenses": [
+        "MIT"
+    ],
+    "name": "format_text",
+    "uuid4": "a30e109e-650f-4636-83e4-e18320c60788",
+    "version": "0.3.0"
+}

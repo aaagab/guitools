@@ -1,0 +1,17 @@
+{
+    "authors": [
+        "Gabriel Auger"
+    ],
+    "deps": [],
+    "description": "timeout class",
+    "filen_main": "__init__.py",
+    "gpm_version": "0.2.0",
+    "installer": "gpm",
+    "licenses": [
+        "MIT"
+    ],
+    "name": "timeout",
+    "timestamp": 1627262340.4543042,
+    "uuid4": "01f987df-3241-4c49-9fec-049aa0a8701c",
+    "version": "3.0.1"
+}
