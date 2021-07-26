@@ -1,23 +1,13 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 1.1.1
-# name: guitools
-# license: MIT
-
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from windows import Windows, Taskbars, Window
-
-
-import modules.shell_helpers.shell_helpers as shell
-from mouses import *
-
-del sys.path[0:2]
-
-import re
 from pprint import pprint
 import copy
+import os
+import re
+import sys
+import subprocess
+
+from .windows import Windows, Taskbars, Window
+from .mouses import Mouse
 
 class Tile(object):
     def __init__(self):
@@ -259,7 +249,8 @@ class Monitors(object):
 
         taskbars=Taskbars().taskbars
         monitor_index=0
-        for line in shell.cmd_get_value("xrandr").splitlines():
+        # for line in shell.cmd_get_value("xrandr").splitlines():
+        for line in subprocess.check_output(["xrandr"]).decode().rstrip().splitlines():
             if " connected" in line:
                 geometry=re.match(rgx_str_geometry,line)
                 if geometry:

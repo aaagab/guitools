@@ -1,28 +1,48 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 1.1.1
-# name: guitools
-# license: MIT
-
-import re
-import subprocess, shlex, inspect
 from pprint import pprint
+import inspect
+import os
+import re
+import shlex
+import shutil
+import subprocess
+import sys
 import time
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from .mouses import Mouse
+from .keyboards import Keyboard
 
-import modules.shell_helpers.shell_helpers as shell
-import modules.message.message as msg
-from modules.timeout.timeout import Timeout
-from dev.mouses import Mouse
-from dev.keyboards import Keyboard
-import shutil
-del sys.path[0:2]
+from ..gpkgs.timeout import TimeOut
+from ..gpkgs import message as msg
+# from ..gpkgs import shell_helpers as shell
 
 def get_exe_paths_from_pid(pid):
-    values=shell.cmd_get_value("ps -q {} -o \"%c\" -o \":%a\" --no-headers".format(pid)).split(":")
+    values=subprocess.check_output([
+        "ps",
+        "-q",
+        str(pid),
+        "-o",
+        "%c",
+        # "\"%c\"",
+        "-o",
+        ":%a",
+        # "\":%a\"",
+        "--no-headers",
+    ]).decode().rstrip().split(":")
+    # print("here", pid)
+    # values=shell.cmd_get_value([
+    #     "ps",
+    #     "-q",
+    #     pid,
+    #     "-o",
+    #     # "%c",
+    #     "\"%c\"",
+    #     "-o",
+    #     # ":%a",
+    #     "\":%a\"",
+    #     "--no-headers",
+    # ]).split(":")
+    # values=shell.cmd_get_value().split(":")
     exe_name, command=values[0], "".join(values[1:])
     exe_name=exe_name.strip()
     command=command.strip()
@@ -40,10 +60,10 @@ def get_exe_paths_from_pid(pid):
     return exe_name, command, filenpa_exe
 
 def cmd_filter_bad_window(command, get_stdout=True):
-    timer=Timeout(3)
+    timer=TimeOut(3).start()
     while True:
-        if timer.has_ended():
-            msg.app_error("Can't get output from cmd '{}'".format(command))
+        if timer.has_ended(pause=.001):
+            msg.error("Can't get output from cmd '{}'".format(command))
             sys.exit(1)
 
         stderr=""
@@ -51,7 +71,7 @@ def cmd_filter_bad_window(command, get_stdout=True):
         ( stdout, stderr ) = process.communicate()
         if stderr:
             if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8"):
-                msg.app_error("cmd: '{}' failed".format(command))
+                msg.error("cmd: '{}' failed".format(command))
                 sys.exit(1)
             else:
                 if "xprop -id" in command:
@@ -227,7 +247,7 @@ class Window_open(object):
 
         desktop_hex_id=Windows.show_desktop()
 
-        timer=Timeout(3, .3)
+        timer=TimeOut(3).start()
         hex_id=""
         while not hex_id:
             tmp_existing_windows=Regular_windows().windows
@@ -243,7 +263,7 @@ class Window_open(object):
                 hex_id=active_hex_id
                 break
 
-            if timer.has_ended():
+            if timer.has_ended(pause=.3):
                 return False
 
         if isinstance(hex_id, set):
@@ -302,11 +322,11 @@ class Window(object):
             self.hex_id=hex(int(hex_id, 16))
         else:
             if not self.hex_id:
-                msg.user_error("Window hex_id '{}' has not been defined, thus update_fields can't run.")
+                msg.error("Window hex_id '{}' has not been defined, thus update_fields can't run.")
                 sys.exit(1)
 
         window=""
-        timer=Timeout(2)
+        timer=TimeOut(2).start()
 
         xprop_fields=""
         while not xprop_fields:
@@ -321,8 +341,8 @@ class Window(object):
                 if window:
                     break
                 
-                if timer.has_ended():
-                    msg.user_error("Window with id '{}' not found.".format(self.hex_id))
+                if timer.has_ended(pause=.001):
+                    msg.error("Window with id '{}' not found.".format(self.hex_id))
                     sys.exit(1)
 
             divider=True
@@ -506,7 +526,7 @@ class Window(object):
                 height=obj_geometry["height"]-self.border_top-self.border_bottom
                 height_ok=False
 
-        timer=Timeout(1.5)
+        timer=TimeOut(1.5).start()
         tolerance=10
         pass_counter=0
         while True:
@@ -520,7 +540,7 @@ class Window(object):
 
             self.update_fields()
             
-            if timer.has_ended():
+            if timer.has_ended(pause=.001):
                 print("# Timer Ended for set geometry #")
                 break
 
@@ -563,9 +583,7 @@ class Window(object):
         return self
 
     def get_monitors(self):
-        sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-        from monitors import Monitors
-        del sys.path[0:1]
+        from .monitors import Monitors
 
         return Monitors()
 
@@ -758,19 +776,18 @@ class Windows(object):
 
     @staticmethod
     def show_desktop(on_off="on"):
-        timer=Timeout(10)
+        timer=TimeOut(10).start()
         while Windows.get_desktop_status() != on_off.lower():
             cmd_filter_bad_window("wmctrl -k {}".format(on_off), False)
-            if timer.has_ended():
-                msg.app_error("Impossible to set show_desktop '{}'".format(on_off))
+            if timer.has_ended(pause=.001):
+                msg.error("Impossible to set show_desktop '{}'".format(on_off))
                 sys.exit()
-            time.sleep(.01)
 
         return Windows.get_active_hex_id()
 
     @staticmethod
     def get_window_hex_id_from_pid(pid):
-        timer=Timeout(3)
+        timer=TimeOut(3).start()
         while True:
             window_ids=cmd_filter_bad_window("wmctrl -lp")
 
@@ -782,7 +799,7 @@ class Windows(object):
                 if pid == line_pid:
                     return hex_id
             
-            if timer.has_ended():
+            if timer.has_ended(pause=.001):
                 msg.warning("no hex_id for pid '{}'".format(pid))
                 break
 
@@ -790,7 +807,8 @@ class Windows(object):
 
     @staticmethod
     def get_active_hex_id():
-        hex_id=hex(int(shell.cmd_get_value("xdotool getactivewindow")))
+        hex_id=hex(int(subprocess.check_output(["xdotool", "getactivewindow"]).decode().rstrip()))
+        # hex_id=hex(int(shell.cmd_get_value("xdotool getactivewindow")))
         if not hex_id:
             return ""
         else:

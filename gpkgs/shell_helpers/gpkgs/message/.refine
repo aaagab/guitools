@@ -4,8 +4,3 @@ __pycache__/
 .vscode
 .git/
 .gitignore
-/archives/ 
-/.etconf/
-/.gitattributes
-/todo.txt
-.directory
