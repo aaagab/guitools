@@ -1,21 +1,9 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 1.1.1
-# name: guitools
-# license: MIT
-
-import sys, os
-import time
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-
-import modules.shell_helpers.shell_helpers as shell
-
-del sys.path[0:2]
-
-import re
 from pprint import pprint
+import os
+import re
+import sys
+import time
 
 class Mouse(object):
     def __init__(self, win_dec_id="", win_frame_upper_left_x="", win_frame_upper_left_y=""):
@@ -35,7 +23,7 @@ class Mouse(object):
 
     def update_coords(self):
         if self.win_dec_id == "":
-            for line in shell.cmd_get_value("xdotool getmouselocation").splitlines():
+            for line in subprocess.check_output(["xdotool", "getmouselocation"]).decode().rstrip().splitlines():
                 for elem in line.split():
                     attrs=elem.split(":")
                     if attrs[0] == "x":
