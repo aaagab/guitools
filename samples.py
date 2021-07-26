@@ -9,6 +9,7 @@ if __name__ == "__main__":
     import subprocess
     import sys
     import time
+
     direpa_script=os.path.dirname(os.path.realpath(__file__))
     direpa_script_parent=os.path.dirname(direpa_script)
     module_name=os.path.basename(direpa_script)
@@ -18,7 +19,6 @@ if __name__ == "__main__":
 
     with open(os.path.join(direpa_script, "config", "config.json"), "r") as f:
         pkg.deps(json.load(f)["deps"])
-
 
     # cmd_filter_bad_window("wmctrl -i -a 0x00600005")
     # cmd_filter_bad_window("wmctrl -l")
