@@ -2,7 +2,7 @@
 # author: Gabriel Auger
 # name: guitools
 # license: MIT
-__version__ = "1.1.1"
+__version__= "2.0.0"
 
 from .dev.input import get_key_pressed
 from .dev.keyboards import Keyboard
