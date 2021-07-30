@@ -2,7 +2,7 @@
 # author: Gabriel Auger
 # name: guitools
 # license: MIT
-__version__= "2.0.3"
+__version__= "2.1.0"
 
 import sys
 import os
