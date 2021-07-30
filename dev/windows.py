@@ -241,7 +241,7 @@ class Window_open(object):
         self.has_window()
         return self
 
-    def has_window(self):
+    def has_window(self, active_hex_id=None):
         if self.window:
             return True
 
@@ -256,7 +256,9 @@ class Window_open(object):
             if hex_id:
                 break
 
-            active_hex_id=Windows.get_active_hex_id()
+            if active_hex_id is None:
+                active_hex_id=Windows.get_active_hex_id()
+                
             if active_hex_id != desktop_hex_id:
                 if active_hex_id in self.existing_hex_ids:
                     self.is_existing_window=True
