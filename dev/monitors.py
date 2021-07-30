@@ -139,11 +139,11 @@ class Monitors(object):
 
         return ""
 
-    def get_active(self):
+    def get_active(self, active_win_hex_id=None):
         monitor=""
         if len(self.monitors) > 1:
-            # active_win=Windows().get_active()
-            active_win_hex_id=Windows.get_active_hex_id()
+            if active_win_hex_id is None:
+                active_win_hex_id=Windows.get_active_hex_id()
             if active_win_hex_id != "":
                 active_win=Window(active_win_hex_id)
                 monitor=self.get_monitor_from_coords(
