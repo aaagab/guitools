@@ -2,16 +2,17 @@
 # author: Gabriel Auger
 # name: guitools
 # license: MIT
-__version__= "2.1.0"
+__version__= "3.0.0"
 
-import sys
-import os
-
-from .dev.input import get_key_pressed
 from .dev.keyboards import Keyboard
-from .dev.monitors import Tile, Monitor, Monitors
+from .dev.monitor import Tile, Monitor
+from .dev.monitors import Monitors
 from .dev.mouses import Mouse
-from .dev.windows import Windows, Taskbars, Window, Regular_windows, Window_open
+from .dev.regular_window import Regular_windows
+from .dev.taskbars import Taskbars
+from .dev.window import Window
+from .dev.window_open import Window_open
+from .dev.windows import Windows
 
 from .gpkgs.deps import deps
 from .gpkgs.xdginfo import xdginfo
