@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 from .regular_window import Regular_windows
-from .window import Window
+from .window import Window, Windows
 
 from ..gpkgs.timeout import TimeOut
     
