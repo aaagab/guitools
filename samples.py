@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # keep this part commented ####################
 
-    # launch_window=Window_open("firefox")
+    # launch_window=pkg.Window_open("firefox")
     # while not launch_window.has_window():
     #     user_input=input("Do you want to continue(y/n): ")
     #     if user_input == "n":
@@ -33,11 +33,11 @@ if __name__ == "__main__":
     # print(launch_window.window.name)
     # print(launch_window.is_existing_window)
 
-    # launch_window=Window_open("code --new-window /data/projs/apps/dt/python/guitools/")
+    # launch_window=pkg.Window_open("code --new-window /data/projs/apps/dt/python/guitools/")
     # print(launch_window.window.name)
     # print(launch_window.is_existing_window)
 
-    # launch_window=Window_open("ls -l")
+    # launch_window=pkg.Window_open("ls -l")
     # while not launch_window.has_window():
     #     user_input=input("Do you want to continue(y/n): ")
     #     if user_input == "n":
