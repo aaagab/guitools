@@ -13,9 +13,14 @@ from ..gpkgs.timeout import TimeOut
 from ..gpkgs import message as msg
 
 class Window(object):
-    def __init__(self, hex_id=""):
+    def __init__(self, hex_id=None, obj_monitors=None):
         self.type=""
-        self.hex_id=""
+        self.ptr=Mouse()
+        self.kbd=Keyboard()
+        if obj_monitors is None:
+            self.set_obj_monitors()
+        else:
+            self.obj_monitors=obj_monitors
         self.dec_id=""
         self.pid=""
         self.upper_left_x=""
@@ -36,15 +41,15 @@ class Window(object):
         self.command=""
         self.exe_name=""
         self.monitor=""
-        self.monitors=self.get_monitors()
         self.min_width=50
         self.min_height=50
-        self.ptr=Mouse()
-        self.kbd=Keyboard()
 
-        if hex_id:
+        if hex_id is None:
+            self.hex_id=None
+        else:
             self.hex_id=hex(int(hex_id, 16))
             self.update_fields()
+
 
     def select(self):
         for line in cmd_filter_bad_window("xwininfo").splitlines():
@@ -55,13 +60,13 @@ class Window(object):
                 break
         return self
 
-    def update_fields(self, hex_id="", monitor=None):
-        if hex_id:
-            self.hex_id=hex(int(hex_id, 16))
-        else:
-            if not self.hex_id:
+    def update_fields(self, hex_id=None, monitor=None):
+        if hex_id is None:
+            if self.hex_id is None:
                 msg.error("Window hex_id '{}' has not been defined, thus update_fields can't run.")
                 sys.exit(1)
+        else:
+            self.hex_id=hex(int(hex_id, 16))
 
         window=""
         timer=TimeOut(2).start()
@@ -164,9 +169,9 @@ class Window(object):
                 self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid)
 
             if monitor is None:
-                self.monitor=self.monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
+                self.monitor=self.obj_monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
                 if self.monitor is None:
-                    self.monitor=self.monitors.monitors[0]
+                    self.monitor=self.obj_monitors.monitors[0]
             else:
                 self.monitor=monitor
 
@@ -197,9 +202,9 @@ class Window(object):
 
     def get_center_coords(self, monitor=None):
         if monitor is None:
-            if not self.monitors:
-                self.monitors=self.get_monitors()
-            monitor=self.monitors.get_active()
+            if not self.obj_monitors:
+                self.set_obj_monitors()
+            monitor=self.obj_monitors.get_active()
 
         mid_width=int(monitor.width/2)
         mid_height=int(monitor.height/2)
@@ -320,10 +325,10 @@ class Window(object):
         self.set_geometry(dict(width=width, height=height))
         return self
 
-    def get_monitors(self):
+    def set_obj_monitors(self):
         from .monitors import Monitors
-
-        return Monitors()
+        self.obj_monitors=Monitors()
+        return self
 
     def get_overlapped_area(self, tile):
         r1={}
@@ -362,14 +367,14 @@ class Window(object):
         monitors=[]
         
         if monitor_index is None:
-            monitors=self.monitors.monitors
+            monitors=self.obj_monitors.monitors
             monitor_index=0
         else:
-            if monitor_index in range(0, len(self.monitors.monitors)):
-                monitors.append(self.monitors.monitors[monitor_index])
+            if monitor_index in range(0, len(self.obj_monitors.monitors)):
+                monitors.append(self.obj_monitors.monitors[monitor_index])
                 monitor_index=monitor_index
             else:
-                monitors.append(self.monitors.monitors[0])
+                monitors.append(self.obj_monitors.monitors[0])
                 monitor_index=0
 
         if direction == "maximize":
@@ -447,7 +452,7 @@ class Window(object):
     def get_tile(self):
         tiles=[]
         tiles_labels=[]
-        for monitor in self.monitors.monitors:
+        for monitor in self.obj_monitors.monitors:
             tiles.extend(monitor.get_tiles(2, 1, True))
             tiles_labels.extend(["left", "right"])
 
@@ -470,12 +475,12 @@ class Window(object):
     def maximize(self, monitor_index=None):
         monitor=""
         if monitor_index is None:
-            monitor=self.monitors.get_active()
+            monitor=self.obj_monitors.get_active()
         else:
-            if monitor_index in range(0, len(self.monitors.monitors)):
-                monitor=self.monitors.monitors[monitor_index]
+            if monitor_index in range(0, len(self.obj_monitors.monitors)):
+                monitor=self.obj_monitors.monitors[monitor_index]
             else:
-                monitor=self.monitors.monitors[0]
+                monitor=self.obj_monitors.monitors[0]
 
         if monitor.index != self.monitor.index:
             self.move(monitor.upper_left_x, monitor.upper_left_y)
