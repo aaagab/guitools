@@ -12,12 +12,13 @@ from .windows import Windows
 from ..gpkgs.timeout import TimeOut
     
 class Window_open(object):
-    def __init__(self, cmd):
+    def __init__(self, cmd, obj_monitors=None):
         self.is_existing_window=""
         self.window=""
         self.existing_hex_ids=[]
-        self.execute(cmd)
         self.existing_windows=[]
+        self.obj_monitors=obj_monitors
+        self.execute(cmd)
 
     def execute(self, cmd):
         self.is_existing_window=False
@@ -60,7 +61,7 @@ class Window_open(object):
         if isinstance(hex_id, set):
             hex_id=list(hex_id)[0]
 
-        self.window=Window(hex_id)
+        self.window=Window(hex_id=hex_id, obj_monitors=self.obj_monitors)
         self.existing_hex_ids=[]
 
         return True
