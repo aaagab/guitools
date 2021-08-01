@@ -25,6 +25,15 @@ if __name__ == "__main__":
 
     # keep this part commented ####################
 
+    # launch_window=pkg.Window_open("dolphin")
+    # while not launch_window.has_window():
+    #     user_input=input("Do you want to continue(y/n): ")
+    #     if user_input == "n":
+    #         break
+    # print(launch_window.window.name)
+    # print(launch_window.is_existing_window)
+    # sys.exit()
+
     # launch_window=pkg.Window_open("firefox")
     # while not launch_window.has_window():
     #     user_input=input("Do you want to continue(y/n): ")

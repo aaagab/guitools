@@ -12,16 +12,24 @@ from ..gpkgs.timeout import TimeOut
 from ..gpkgs import message as msg
 
 class Windows(object):
-    def __init__(self):
+    def __init__(self, obj_monitors=None):
         self.windows=[]
+        self.obj_monitors=obj_monitors
+        if self.obj_monitors is None:
+            self.set_obj_monitors()
         self.get_all_windows()
-
+    
     def get_active(self):
         hex_id=self.get_active_hex_id()
         if not hex_id:
             return ""
         else:
-            return Window().update_fields(hex_id)
+            return Window(obj_monitors=self.obj_monitors).update_fields(hex_id)
+
+    def set_obj_monitors(self):
+        from .monitors import Monitors
+        self.obj_monitors=Monitors()
+        return self
 
     @staticmethod
     def get_desktop_status():
@@ -89,7 +97,7 @@ class Windows(object):
 
         for line in window_ids.splitlines():
             hex_id=hex(int(line.strip().split(" ")[0], 16))
-            self.windows.append(Window().update_fields(hex_id))
+            self.windows.append(Window(obj_monitors=self.obj_monitors).update_fields(hex_id))
         return self
 
     def filter_regular_type(self):
