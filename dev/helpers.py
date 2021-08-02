@@ -11,8 +11,10 @@ from ..gpkgs.timeout import TimeOut
 from ..gpkgs import message as msg
 
 def get_exe_paths_from_pid(pid):
-    values=subprocess.check_output([
+    cmd=[
         "ps",
+        # ww to have all the parameters with executable path
+        "-awxwe",
         "-q",
         str(pid),
         "-o",
@@ -20,21 +22,32 @@ def get_exe_paths_from_pid(pid):
         "-o",
         ":%a",
         "--no-headers",
-    ]).decode().rstrip().split(":")
+    ]
+    ps_values=subprocess.check_output(cmd).decode().rstrip().split(":")
 
-    exe_name, command=values[0], "".join(values[1:])
-    exe_name=exe_name.strip()
-    command=command.strip()
-    filenpa_exe=""
-    # this loop does not take in account path with spaces.
-    for c in command:
-        if c == " ":
-            break
-        filenpa_exe+=c
+    exe_name=ps_values[0]
+    command="".join(ps_values[1:])
+
+    cmd=[
+        "ls",
+        "-l",
+        "/proc/{}/exe".format(pid),
+    ]
+
+    filenpa_exe=None
+    try:
+        # ls can provide full executable path without parameters
+        #  it is better to grab executable path with spaces
+        # however ls get permission denied on process owned by root so in that case ps is used but ps get full executable path with all arguments and then it is impossible to tell exactly the path of the executable if spaces are present in that path.
+        ls_values=subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode().rstrip()
+        filenpa_exe=ls_values.split()[-1]
+    except:
+        filenpa_exe=command.split()[0]
 
     if filenpa_exe[0] != os.sep:
-        filenpa_exe=shutil.which(filenpa_exe)
-        command=filenpa_exe+command[len(exe_name):]
+        tmp_filenpa_exe=shutil.which(filenpa_exe)
+        if tmp_filenpa_exe is not None:
+            filenpa_exe=tmp_filenpa_exe
 
     return exe_name, command, filenpa_exe
 
