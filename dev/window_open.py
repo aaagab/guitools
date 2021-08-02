@@ -10,57 +10,44 @@ from .window import Window
 from .windows import Windows
 
 from ..gpkgs.timeout import TimeOut
-    
+
+
 class Window_open(object):
-    def __init__(self, cmd, obj_monitors=None):
-        self.is_existing_window=""
-        self.window=""
+    def __init__(self, obj_monitors=None):
+        self.window=None
         self.existing_hex_ids=[]
-        self.existing_windows=[]
         self.obj_monitors=obj_monitors
-        self.execute(cmd)
 
     def execute(self, cmd):
-        self.is_existing_window=False
-        self.window=""
-        self.existing_windows_obj=Regular_windows()
-        self.existing_hex_ids=[win["hex_id"] for win in self.existing_windows_obj.windows]
-        self.desktop_hex_ids=[hex_id for hex_id in self.existing_windows_obj.desktop_hex_ids]
-        
-        subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        self.has_window()
+        self.window=None
+        self.existing_hex_ids=[win["hex_id"] for win in Regular_windows().windows]
+        proc=subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return self
 
-    def has_window(self):
-        if self.window:
+    def has_window(self, _class=None):
+        if self.window is not None:
             return True
 
-        desktop_hex_id=Windows.show_desktop()
-
         timer=TimeOut(3).start()
-        hex_id=""
-        while not hex_id:
+        while True:
             tmp_existing_windows=Regular_windows().windows
             tmp_existing_hex_ids=[win["hex_id"] for win in tmp_existing_windows]
-            hex_id=(set(tmp_existing_hex_ids) - set(self.existing_hex_ids))
-            if hex_id:
-                break
+            diff_set=(set(tmp_existing_hex_ids) - set(self.existing_hex_ids))
 
-            active_hex_id=Windows.get_active_hex_id()
-                
-            if active_hex_id != desktop_hex_id:
-                if active_hex_id in self.existing_hex_ids:
-                    self.is_existing_window=True
-                hex_id=active_hex_id
-                break
+            if diff_set:
+                for hex_id in diff_set:
+                    tmp_window=Window(hex_id=hex_id, obj_monitors=self.obj_monitors)
+                    if _class is None:
+                        self.window=tmp_window
+                        return True
+                    else:
+                        if _class == tmp_window._class:
+                            self.window=tmp_window
+                            return True
+                        else:
+                            self.existing_hex_ids.append(hex_id)
+                            tmp_window=None
 
             if timer.has_ended(pause=.3):
+                self.window=None
                 return False
-
-        if isinstance(hex_id, set):
-            hex_id=list(hex_id)[0]
-
-        self.window=Window(hex_id=hex_id, obj_monitors=self.obj_monitors)
-        self.existing_hex_ids=[]
-
-        return True
