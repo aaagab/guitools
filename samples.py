@@ -20,38 +20,39 @@ if __name__ == "__main__":
     with open(os.path.join(direpa_script, "config", "config.json"), "r") as f:
         pkg.deps(json.load(f)["deps"])
 
-    # cmd_filter_bad_window("wmctrl -i -a 0x00600005")
-    # cmd_filter_bad_window("wmctrl -l")
 
     # keep this part commented ####################
 
-    # launch_window=pkg.Window_open("dolphin")
-    # while not launch_window.has_window():
-    #     user_input=input("Do you want to continue(y/n): ")
-    #     if user_input == "n":
-    #         break
-    # print(launch_window.window.name)
-    # print(launch_window.is_existing_window)
-    # sys.exit()
+    # cmd_filter_bad_window("wmctrl -i -a 0x00600005")
+    # cmd_filter_bad_window("wmctrl -l")
 
-    # launch_window=pkg.Window_open("firefox")
-    # while not launch_window.has_window():
-    #     user_input=input("Do you want to continue(y/n): ")
-    #     if user_input == "n":
-    #         break
-    # print(launch_window.window.name)
-    # print(launch_window.is_existing_window)
+    # print(pkg.get_exe_paths_from_pid(1955)) # pid owned by root
+    # print(pkg.get_exe_paths_from_pid(22102)) # pid owed by user
 
-    # launch_window=pkg.Window_open("code --new-window /data/projs/apps/dt/python/guitools/")
-    # print(launch_window.window.name)
-    # print(launch_window.is_existing_window)
 
-    # launch_window=pkg.Window_open("ls -l")
-    # while not launch_window.has_window():
-    #     user_input=input("Do you want to continue(y/n): ")
-    #     if user_input == "n":
-    #         break
-    # sys.exit()
+    cmd="/usr/bin/konsole -p tabtitle='window'"
+    launch_window=pkg.Window_open().execute(cmd)
+    stopped=False
+    while launch_window.has_window(_class="konsole") is False:
+        user_input=input("Do you want to continue(y/n): ")
+        if user_input == "n":
+            stopped=True
+            break
+    
+    if stopped is False:
+        launch_window.window.print()
+
+    cmd="firefox"
+    launch_window=pkg.Window_open().execute(cmd)
+    stopped=False
+    while launch_window.has_window() is False:
+        user_input=input("Do you want to continue(y/n): ")
+        if user_input == "n":
+            stopped=True
+            break
+    
+    if stopped is False:
+        launch_window.window.print()
 
     print("Select window with mouse click:")
     print(pkg.Window().select().hex_id)
