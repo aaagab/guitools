@@ -13,7 +13,7 @@ from ..gpkgs.timeout import TimeOut
 from ..gpkgs import message as msg
 
 class Window(object):
-    def __init__(self, hex_id=None, obj_monitors=None):
+    def __init__(self, hex_id=None, obj_monitors=None, command=None):
         self.type=""
         self.ptr=Mouse()
         self.kbd=Keyboard()
@@ -38,7 +38,7 @@ class Window(object):
         self.frame_height=""
         self.frame_upper_left_x=""
         self.frame_upper_left_y=""
-        self.command=""
+        self.command=command
         self.exe_name=""
         self.monitor=""
         self.min_width=50
@@ -166,7 +166,7 @@ class Window(object):
             self.kbd.win_dec_id=self.dec_id
             
             if self.pid != 0 and self.pid != "":
-                self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid)
+                self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid, command=self.command)
 
             if monitor is None:
                 self.monitor=self.obj_monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
