@@ -10,11 +10,11 @@ import time
 from ..gpkgs.timeout import TimeOut
 from ..gpkgs import message as msg
 
-def get_exe_paths_from_pid(pid):
+def get_exe_paths_from_pid(pid, command=None):
     cmd=[
         "ps",
         # ww to have all the parameters with executable path
-        "-awxwe",
+        # "-awxwe",
         "-q",
         str(pid),
         "-o",
@@ -26,7 +26,7 @@ def get_exe_paths_from_pid(pid):
     ps_values=subprocess.check_output(cmd).decode().rstrip().split(":")
 
     exe_name=ps_values[0]
-    command="".join(ps_values[1:])
+    tmp_command="".join(ps_values[1:])
 
     cmd=[
         "ls",
@@ -42,12 +42,15 @@ def get_exe_paths_from_pid(pid):
         ls_values=subprocess.check_output(cmd, stderr=subprocess.DEVNULL).decode().rstrip()
         filenpa_exe=ls_values.split()[-1]
     except:
-        filenpa_exe=command.split()[0]
+        filenpa_exe=tmp_command.split()[0]
 
     if filenpa_exe[0] != os.sep:
         tmp_filenpa_exe=shutil.which(filenpa_exe)
         if tmp_filenpa_exe is not None:
             filenpa_exe=tmp_filenpa_exe
+
+    if command is None:
+        command=tmp_command
 
     return exe_name, command, filenpa_exe
 
