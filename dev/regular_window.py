@@ -12,6 +12,7 @@ from ..gpkgs import message as msg
 class Regular_windows(object):
     def __init__(self):
         self.windows=[]
+        self.windows_hex_ids=[]
         self.desktop_hex_ids=[]
         self.get_windows()
         self.sorted_by_exe_names()
@@ -49,6 +50,7 @@ class Regular_windows(object):
                     )
 
                     self.windows.append(window)
+                    self.windows_hex_ids.append(hex_id)
                 if "_NET_WM_WINDOW_TYPE_DESKTOP" in xprop_fields:
                     self.desktop_hex_ids.append(hex_id)
         
