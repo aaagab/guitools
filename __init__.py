@@ -2,7 +2,7 @@
 # author: Gabriel Auger
 # name: guitools
 # license: MIT
-__version__= "4.3.0"
+__version__= "4.4.0"
 
 from .dev.keyboards import Keyboard
 from .dev.monitor import Tile, Monitor
