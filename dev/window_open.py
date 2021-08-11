@@ -23,7 +23,9 @@ class Window_open(object):
         self.window=None
         self._command=cmd
         self.regular_windows=Regular_windows()
-        proc=subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if isinstance(cmd, str):
+            cmd=shlex.split(cmd)
+        proc=subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return self
 
     def focus_desktop(self):
