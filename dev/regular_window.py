@@ -14,10 +14,10 @@ class Regular_windows(object):
         self.windows=[]
         self.windows_hex_ids=[]
         self.desktop_hex_ids=[]
-        self.get_windows()
+        self.set_windows()
         self.sorted_by_exe_names()
 
-    def get_windows(self):
+    def set_windows(self):
         xprop_fields=""
         while not xprop_fields:
             self.windows=[]

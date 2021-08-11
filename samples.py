@@ -31,8 +31,8 @@ if __name__ == "__main__":
 
     # cmd="/usr/bin/konsole -p tabtitle='window'"
     cmd="/usr/share/codium/codium --new-window --no-sandbox /home/gabaaa/fty/wrk/m/message/1/"
-    # shared is True means that codium reuse an existing window if the command is called multiple time with the same path.
-    launch_window=pkg.Window_open().execute(cmd, shared=True)
+    shared is True means that codium reuse an existing window if the command is called multiple time with the same path.
+    launch_window=pkg.Window_open().execute(cmd)
     stopped=False
     while launch_window.has_window(_class="vscodium") is False:
         user_input=input("Do you want to continue(y/n): ")
@@ -42,6 +42,7 @@ if __name__ == "__main__":
     
     if stopped is False:
         launch_window.window.print()
+
 
     cmd="/usr/bin/konsole -p tabtitle='window'"
     launch_window=pkg.Window_open().execute(cmd)
@@ -66,6 +67,9 @@ if __name__ == "__main__":
     
     if stopped is False:
         launch_window.window.print()
+
+    sys.exit()
+
 
     print("Select window with mouse click:")
     print(pkg.Window().select().hex_id)

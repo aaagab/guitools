@@ -17,44 +17,46 @@ class Window_open(object):
         self.window=None
         self._obj_monitors=obj_monitors
         self._verified_hex_ids=[]
-        self._shared=False
         self._command=None
 
-    def execute(self, cmd, shared=False):
+    def execute(self, cmd):
         self.window=None
-        self._shared=shared
         self._command=cmd
-        if self._shared is True:
-            self._verified_hex_ids=[]
-        else:
-            self._verified_hex_ids=[win["hex_id"] for win in Regular_windows().windows]
+        self.regular_windows=Regular_windows()
         proc=subprocess.Popen(shlex.split(cmd), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return self
 
+    def focus_desktop(self):
+        self.desktop_hex_id=None
+        for hex_id in self.regular_windows.desktop_hex_ids:
+            Regular_windows.focus(hex_id)
+            if Windows.get_active_hex_id() == hex_id:
+                self.desktop_hex_id=hex_id
+                break
+
+        if self.desktop_hex_id is None:
+            msg.error("For window_open focusing desktop failed", exit=1)
+
     def has_window(self, _class=None):
-        if self.window is not None:
-            return True
-
-        desktop_hex_id=None
-
+        self.focus_desktop()
         timer=TimeOut(3).start()
+        previous_active_hex_id=None
+        active_hex_id=Windows.get_active_hex_id()
         while True:
-            if self._shared is True:
-                active_hex_id=Windows.get_active_hex_id()
-                
-                if active_hex_id not in self._verified_hex_ids:
-                    if active_hex_id != desktop_hex_id:
-                        if self.confirm_window(_class, active_hex_id) is True:
-                            return True
-            else:
-                tmp_existing_windows=Regular_windows().windows
-                tmp_existing_hex_ids=[win["hex_id"] for win in tmp_existing_windows]
-                diff_set=(set(tmp_existing_hex_ids) - set(self._verified_hex_ids))
+            active_hex_id=Windows.get_active_hex_id()
 
+            if active_hex_id == self.desktop_hex_id:
+                tmp_existing_hex_ids=Regular_windows().windows_hex_ids
+                diff_set=(set(tmp_existing_hex_ids) - set(self.regular_windows.windows_hex_ids))
                 if diff_set:
                     for hex_id in diff_set:
                         if self.confirm_window(_class, hex_id) is True:
                             return True
+            else:
+                if self.confirm_window(_class, active_hex_id) is True:
+                    return True
+                else:
+                    Regular_windows.focus(self.desktop_hex_id)
 
             if timer.has_ended(pause=.3):
                 self.window=None
@@ -71,5 +73,5 @@ class Window_open(object):
                 return True
             else:
                 self._verified_hex_ids.append(hex_id)
-                tmp_window=None
+                self.window=None
                 return False
