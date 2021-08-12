@@ -11,6 +11,8 @@ from ..gpkgs.timeout import TimeOut
 from ..gpkgs import message as msg
 
 def get_exe_paths_from_pid(pid, command=None):
+    if pid == 0:
+        return "unknown", "unknown", "unknown"
     cmd=[
         "ps",
         # ww to have all the parameters with executable path
