@@ -2,6 +2,7 @@
 from pprint import pprint
 import os
 import re
+import subprocess
 import sys
 import time
 
@@ -16,10 +17,12 @@ class Mouse(object):
         self.rxy=""
 
     def get_x(self):
-        return self.update_coords()[0]
+        self.update_coords()
+        return self.x
 
     def get_y(self):
-        return self.update_coords()[1]
+        self.update_coords()
+        return self.y
 
     def update_coords(self):
         if self.win_dec_id == "":
@@ -34,6 +37,10 @@ class Mouse(object):
             self.xy=[self.x, self.y]
 
         return self
+
+    def get_coords(self):
+        self.update_coords()
+        return self.xy
 
     def set_coords(self, x, y):
         os.system("xdotool mousemove {} {}".format(x, y))
