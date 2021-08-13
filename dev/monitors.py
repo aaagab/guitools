@@ -31,7 +31,6 @@ class Monitors(object):
                 active_win_hex_id=Windows.get_active_hex_id()
             if active_win_hex_id != "":
                 active_win=Window(active_win_hex_id)
-                pprint(vars(active_win))
                 monitor=self.get_monitor_from_coords(
                     active_win.frame_upper_left_x,
                     active_win.frame_upper_left_y,
