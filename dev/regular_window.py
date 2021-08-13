@@ -59,6 +59,10 @@ class Regular_windows(object):
         cmd_filter_bad_window("wmctrl -i -a {}".format(hex_id), False)
     
     @staticmethod
+    def close(hex_id):
+        cmd_filter_bad_window("wmctrl -i -c {}".format(hex_id), False)
+
+    @staticmethod
     def minimize(hex_id):
         dec_id=int(hex_id, 16)
         os.system("xdotool windowminimize {}".format(dec_id))
