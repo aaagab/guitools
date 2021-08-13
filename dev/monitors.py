@@ -17,9 +17,9 @@ class Monitors(object):
         self.monitors=[]
         self.set_monitors()
 
-    def get_monitor_from_coords(self, x, y):
+    def get_monitor_from_coords(self, x, y, width, height):
         for monitor in self.monitors:
-            if monitor.contains(x, y):
+            if monitor.contains(x+width, y+height):
                 return monitor
 
         return None
@@ -31,13 +31,16 @@ class Monitors(object):
                 active_win_hex_id=Windows.get_active_hex_id()
             if active_win_hex_id != "":
                 active_win=Window(active_win_hex_id)
+                pprint(vars(active_win))
                 monitor=self.get_monitor_from_coords(
-                    active_win.upper_left_x,
-                    active_win.upper_left_y,
+                    active_win.frame_upper_left_x,
+                    active_win.frame_upper_left_y,
+                    active_win.frame_width,
+                    active_win.frame_height,
                 )
             if monitor is None:
                 x, y = Mouse().get_coords()
-                monitor=self.get_monitor_from_coords(x, y)
+                monitor=self.get_monitor_from_coords(x, y, 0, 0)
                 if monitor is None:
                     monitor=self.monitors[0]
         else:

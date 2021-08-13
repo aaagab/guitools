@@ -21,6 +21,8 @@ if __name__ == "__main__":
         pkg.deps(json.load(f)["deps"])
 
 
+    pprint(vars(pkg.Monitors().get_active()))
+
     # keep this part commented ####################
 
     # cmd_filter_bad_window("wmctrl -i -a 0x00600005")
@@ -30,45 +32,42 @@ if __name__ == "__main__":
     # print(pkg.get_exe_paths_from_pid(22102)) # pid owed by user
 
     # cmd="/usr/bin/konsole -p tabtitle='window'"
-    cmd="/usr/share/codium/codium --new-window --no-sandbox /home/gabaaa/fty/wrk/m/message/1/"
-    shared is True means that codium reuse an existing window if the command is called multiple time with the same path.
-    launch_window=pkg.Window_open().execute(cmd)
-    stopped=False
-    while launch_window.has_window(_class="vscodium") is False:
-        user_input=input("Do you want to continue(y/n): ")
-        if user_input == "n":
-            stopped=True
-            break
+    # cmd="/usr/share/codium/codium --new-window --no-sandbox /home/gabaaa/fty/wrk/m/message/1/"
+    # launch_window=pkg.Window_open().execute(cmd)
+    # stopped=False
+    # while launch_window.has_window(_class="vscodium") is False:
+    #     user_input=input("Do you want to continue(y/n): ")
+    #     if user_input == "n":
+    #         stopped=True
+    #         break
     
-    if stopped is False:
-        launch_window.window.print()
+    # if stopped is False:
+    #     launch_window.window.print()
 
 
-    cmd="/usr/bin/konsole -p tabtitle='window'"
-    launch_window=pkg.Window_open().execute(cmd)
-    stopped=False
-    while launch_window.has_window(_class="konsole") is False:
-        user_input=input("Do you want to continue(y/n): ")
-        if user_input == "n":
-            stopped=True
-            break
+    # cmd="/usr/bin/konsole -p tabtitle='window'"
+    # launch_window=pkg.Window_open().execute(cmd)
+    # stopped=False
+    # while launch_window.has_window(_class="konsole") is False:
+    #     user_input=input("Do you want to continue(y/n): ")
+    #     if user_input == "n":
+    #         stopped=True
+    #         break
     
-    if stopped is False:
-        launch_window.window.print()
+    # if stopped is False:
+    #     launch_window.window.print()
 
-    cmd="firefox"
-    launch_window=pkg.Window_open().execute(cmd)
-    stopped=False
-    while launch_window.has_window() is False:
-        user_input=input("Do you want to continue(y/n): ")
-        if user_input == "n":
-            stopped=True
-            break
+    # cmd="firefox"
+    # launch_window=pkg.Window_open().execute(cmd)
+    # stopped=False
+    # while launch_window.has_window() is False:
+    #     user_input=input("Do you want to continue(y/n): ")
+    #     if user_input == "n":
+    #         stopped=True
+    #         break
     
-    if stopped is False:
-        launch_window.window.print()
-
-    sys.exit()
+    # if stopped is False:
+    #     launch_window.window.print()
 
 
     print("Select window with mouse click:")
