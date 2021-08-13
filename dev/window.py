@@ -169,7 +169,12 @@ class Window(object):
                 self.exe_name, self.command, self.filenpa_exe = get_exe_paths_from_pid(self.pid, command=self.command)
 
             if monitor is None:
-                self.monitor=self.obj_monitors.get_monitor_from_coords(self.upper_left_x, self.upper_left_y)
+                self.monitor=self.obj_monitors.get_monitor_from_coords(
+                    self.frame_upper_left_x,
+                    self.frame_upper_left_y,
+                    self.frame_width,
+                    self.frame_height,
+                )
                 if self.monitor is None:
                     self.monitor=self.obj_monitors.monitors[0]
             else:
