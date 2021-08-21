@@ -31,10 +31,21 @@ class Window_open(object):
 
     def focus_desktop(self):
         self.desktop_hex_id=None
-        for hex_id in self.regular_windows.desktop_hex_ids:
-            Regular_windows.focus(hex_id)
-            if Windows.get_active_hex_id() == hex_id:
-                self.desktop_hex_id=hex_id
+
+        timer=TimeOut(3).start()
+
+        while True:
+            found=False
+            for hex_id in self.regular_windows.desktop_hex_ids:
+                Regular_windows.focus(hex_id)
+                if Windows.get_active_hex_id() == hex_id:
+                    self.desktop_hex_id=hex_id
+                    found=True
+                    break
+
+            if timer.has_ended(pause=.3):
+                break
+            elif found is True:
                 break
 
         if self.desktop_hex_id is None:
