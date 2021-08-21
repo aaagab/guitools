@@ -8,6 +8,7 @@ import sys
 from .regular_window import Regular_windows
 from .window import Window
 from .windows import Windows
+from ..gpkgs import message as msg
 
 from ..gpkgs.timeout import TimeOut
 
