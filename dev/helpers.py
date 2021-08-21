@@ -67,7 +67,6 @@ def cmd_filter_bad_window(command, get_stdout=True):
         process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ( stdout, stderr ) = process.communicate()
         if stderr:
-            print(stderr)
             if not "X Error of failed request:  BadWindow" in stderr.decode("utf-8") and \
             not "xwininfo: error: Can't grab the mouse." in stderr.decode("utf-8"):
                 msg.error("cmd: '{}' failed".format(command))
