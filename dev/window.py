@@ -487,8 +487,7 @@ class Window(object):
             else:
                 monitor=self.obj_monitors.monitors[0]
 
-        if monitor.index != self.monitor.index:
-            self.move(monitor.upper_left_x, monitor.upper_left_y)
+        self.move(monitor.upper_left_x, monitor.upper_left_y)
         cmd_filter_bad_window("wmctrl -i -r {} -b add,maximized_vert,maximized_horz".format(self.hex_id),False)
         self.update_fields()
 
