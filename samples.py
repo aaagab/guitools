@@ -32,10 +32,10 @@ if __name__ == "__main__":
     # print(pkg.get_exe_paths_from_pid(22102)) # pid owed by user
 
     # cmd="/usr/bin/konsole -p tabtitle='window'"
-    cmd="/usr/share/codium/codium --new-window --no-sandbox /home/gabaaa/fty/wrk/m/message/1/"
+    cmd="/usr/share/code/code --new-window --no-sandbox /home/gabaaa/fty/wrk/m/message/1/"
     launch_window=pkg.Window_open().execute(cmd)
     stopped=False
-    while launch_window.has_window(_class="vscodium") is False:
+    while launch_window.has_window(_class="code") is False:
         user_input=input("Do you want to continue(y/n): ")
         if user_input == "n":
             stopped=True
