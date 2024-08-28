@@ -2,32 +2,35 @@
 from pprint import pprint
 import copy
 import os
-import re
 import sys
 
 class Monitor(object):
-    def __init__(self):
+    def __init__(self) -> None:
+        self.is_primary=False
         self.name=""
-        self.width=""
-        self.height=""
-        self.upper_left_x=""
-        self.upper_left_y=""
-        self.range_x=""
-        self.range_y=""
+        self.width:int=0
+        self.height:int=0
+        self.x:int=0
+        self.y:int=0
+        self.range_x:list[int]=[]
+        self.range_y:list[int]=[]
         # taskbar attribute
-        self.tb_width=""
-        self.tb_height=""
-        self.tb_upper_left_x=""
-        self.tb_upper_left_y=""
-        self.tb_range_x=""
-        self.tb_range_y=""
+        self.tb_width:int=0
+        self.tb_height:int=0
+        self.tb_x:int=0
+        self.tb_y:int=0
+        self.tb_range_x:list[int]=[]
+        self.tb_range_y:list[int]=[]
 
-        self.index=""
+        self.index:int=0
+
+    def info(self):
+        return f"{self.name} {self.width}x{self.height}+{self.x}+{self.y} primary:{str(self.is_primary).lower()}"
 
     def print(self):
         pprint(vars(self))
 
-    def contains(self, x, y):
+    def contains(self, x:int, y:int):
         x_found=False
         y_found=False
         if x >= self.range_x[0] and x <= self.range_x[1]:
@@ -41,40 +44,39 @@ class Monitor(object):
         else:
             return False
 
-    def get_tiles(self, int_v_divs, int_h_divs, bool_taskbar, tile_nums=[]):
-        if tile_nums:
-            if not isinstance(tile_nums, list):
-                tile_nums=[tile_nums]
+    def get_tiles(self, xdivs:int, ydivs:int, cover_taskbar:bool, tile_nums:list[int]|None=None):
+        if tile_nums is None:
+            tile_nums=[]
 
-        num_tiles= int_v_divs * int_h_divs
+        num_tiles= xdivs * ydivs
         tmp_tile_nums=copy.deepcopy(tile_nums)
-        tile_width=""
-        tile_height=""
+        tile_width:int
+        tile_height:int
 
-        if bool_taskbar:
-            tile_width=int(self.tb_width/int_v_divs)
-            tile_height=int(self.tb_height/int_h_divs)
+        if cover_taskbar is True:
+            tile_width=int(self.width/xdivs)
+            tile_height=int(self.height/ydivs)
         else:
-            tile_width=int(self.width/int_v_divs)
-            tile_height=int(self.height/int_h_divs)
+            tile_width=int(self.tb_width/xdivs)
+            tile_height=int(self.tb_height/ydivs)
 
         tiles=[]
         index=1
-        for h_div in range(int_h_divs):
-            for v_div in range(int_v_divs):
+        for h_div in range(ydivs):
+            for v_div in range(xdivs):
                 tile=Tile()
-                tile.upper_left_x=self.upper_left_x+(v_div*tile_width)
-                tile.upper_left_y=self.upper_left_y+(h_div*tile_height)
+                tile.x=self.x+(v_div*tile_width)
+                tile.y=self.y+(h_div*tile_height)
                 tile.width=tile_width
                 tile.height=tile_height
                 tile.index=index
                 tile.range_x=[
-                    tile.upper_left_x,
-                    tile.upper_left_x+tile.width
+                    tile.x,
+                    tile.x+tile.width
                 ]
                 tile.range_y=[
-                    tile.upper_left_y,
-                    tile.upper_left_y+tile.height
+                    tile.y,
+                    tile.y+tile.height
                 ]
                 tile.nums=num_tiles
 
@@ -96,20 +98,20 @@ class Monitor(object):
         return tiles
 
 class Tile(object):
-    def __init__(self):
-        self.upper_left_x=""
-        self.upper_left_y=""
-        self.width=""
-        self.height=""
-        self.nums=""
-        self.index=""
-        self.range_x=[]
-        self.range_y=[]
+    def __init__(self) -> None:
+        self.x:int=0
+        self.y:int=0
+        self.width:int=0
+        self.height:int=0
+        self.nums:int=0
+        self.index:int=0
+        self.range_x:list[int]=[]
+        self.range_y:list[int]=[]
 
     def print(self):
         pprint(vars(self))
 
-    def contains(self, x, y):
+    def contains(self, x:int, y:int):
         x_found=False
         y_found=False
         if x >= self.range_x[0] and x < self.range_x[1]:

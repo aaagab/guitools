@@ -2,21 +2,21 @@
 # author: Gabriel Auger
 # name: guitools
 # license: MIT
-__version__= "4.5.7"
+__version__= "5.0.0"
 
+from .dev.xlibhelpers import XlibHelpers, WindowType, WindowStateAction, WindowState, Atom, WindowViewState
 from .dev.keyboards import Keyboard
 from .dev.monitor import Tile, Monitor
 from .dev.monitors import Monitors
 from .dev.mouses import Mouse
-from .dev.regular_window import Regular_windows
 from .dev.taskbars import Taskbars
-from .dev.window import Window
-from .dev.window_open import Window_open
+from .dev.window import Window, TileMove, Gravity, Notify
+from .dev.window_open import WindowOpen
 from .dev.windows import Windows
+from .dev.helpers import ExeInfo
 
-from .dev.helpers import get_exe_paths_from_pid
+from .gpkgs.deps import deps as _deps
+from .gpkgs.xdginfo import xdginfo as _xdginfo
+from .gpkgs.timeout import TimeOut as _TimeOut
 
-from .gpkgs.deps import deps
-from .gpkgs.xdginfo import xdginfo
-from .gpkgs.timeout import TimeOut
-
+from .gpkgs.timeit import TimeIt as _TimeIt
