@@ -17,7 +17,7 @@ from Xlib.xobject.drawable import Window as XlibWindow
 from .xlibhelpers import XlibHelpers
 
 class Windows():
-    def __init__(self, display:Display|None=None, root:XlibWindow|None=None, obj_monitors=None) -> None:
+    def __init__(self, display:Display|None=None, root:XlibWindow|None=None, obj_monitors:Monitors|None=None) -> None:
         
         self._xlib=XlibHelpers(display=display, root=root)
         self.display=self._xlib.display
@@ -31,50 +31,23 @@ class Windows():
         self.set_windows()
 
     @staticmethod
-    def get_active_window():
+    def get_window(hex_id:str, obj_monitors:Monitors|None=None):
+        _xlib=XlibHelpers()
+        xwin=_xlib.get_window_from_hex_id(hex_id=hex_id)
+        if xwin is None:
+            return None
+        else:
+            return Window(xwin=xwin, display=_xlib.display, root=_xlib.root, obj_monitors=obj_monitors)
+
+    @staticmethod
+    def get_active_window(obj_monitors:Monitors|None=None):
         _xlib=XlibHelpers()
         xwin=_xlib.get_active_xwindow()
         if xwin is None:
             return None
         else:
-            return Window(xwin=xwin, display=_xlib.display, root=_xlib.root)
+            return Window(xwin=xwin, display=_xlib.display, root=_xlib.root, obj_monitors=obj_monitors)
         
-    def get_window(self, hex_id:str, refresh=False):
-        if refresh is True:
-            for dec_id in self.get_window_dec_ids(refresh=refresh):
-                if hex(dec_id) == hex_id:
-                    xwin=self._xlib.get_window_from_dec_id(dec_id=dec_id)
-                    if xwin is None:
-                        return None
-                    else:
-                        return Window(xwin, display=self.display, root=self.root, obj_monitors=self.obj_monitors)
-        else:
-            for window in self.windows:
-                if window.hex_id == hex_id:
-                    return window
-        return None
-    
-    def get_window_dec_ids(self, refresh=False):
-        if refresh is True:
-            self.obj_monitors=Monitors(display=self.display, root=self.root)
-            # _NET_CLIENT_LIST_STACKING => allows to list windows in order of last used windows at the end of the stack
-            # _NET_CLIENT_LIST
-            client_list = self.root.get_full_property(self.display.get_atom("_NET_CLIENT_LIST_STACKING"), property_type=AnyPropertyType).value
-            for window_id in client_list:
-                yield window_id
-        else:
-            for window in self.windows:
-                yield window.dec_id
-        
-    def get_windows(self, refresh=False):
-        if refresh is True:
-            for window_id in self.get_window_dec_ids(refresh=refresh):
-                xwin = self.display.create_resource_object('window', window_id)
-                yield xwin
-        else:
-            for window in self.windows:
-                yield window.xwin
-    
     @staticmethod
     def select_window():
         _xlib=XlibHelpers()
@@ -85,7 +58,12 @@ class Windows():
         self.regular_windows=[]
         self._desktop_windows=[]
         self.taskbars=[]
-        for xwin in self.get_windows(refresh=True):
+
+        prop = self.root.get_full_property(self.display.get_atom("_NET_CLIENT_LIST"), property_type=AnyPropertyType)
+        if prop is None:
+            raise NotImplementedError()
+        for window_id in prop.value:
+            xwin = self.display.create_resource_object('window', window_id)
             window=Window(xwin, display=self.display, root=self.root, obj_monitors=self.obj_monitors)
             self.windows.append(window)
             if window.is_desktop:
