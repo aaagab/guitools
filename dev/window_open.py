@@ -84,7 +84,7 @@ class WindowOpen():
                     self._desktop_hex_id=hex_id
                     found=True
                     break
-            if timer.has_ended(pause=.3):
+            if timer.has_ended(pause=.001):
                 break
             elif found is True:
                 break
@@ -110,7 +110,7 @@ class WindowOpen():
                 else:
                     self._xlib.focus_window(self._desktop_hex_id)
 
-            if timer.has_ended(pause=.3):
+            if timer.has_ended(pause=.001):
                 self.window=None
                 return False
 
