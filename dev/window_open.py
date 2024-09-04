@@ -91,7 +91,7 @@ class WindowOpen():
         if self._desktop_hex_id is None:
             raise Exception("For window_open focusing desktop failed")
 
-    def has_window(self, class_name:str|None=None):
+    def has_window(self, class_name_short:str|None=None):
         self.focus_desktop()
         timer=TimeOut(3).start()
         while True:
@@ -102,10 +102,10 @@ class WindowOpen():
                 diff_set=(set(tmp_existing_hex_ids) - set(self.regular_hex_ids))
                 if diff_set:
                     for hex_id in diff_set:
-                        if self.confirm_window(hex_id, class_name) is True:
+                        if self.confirm_window(hex_id, class_name_short) is True:
                             return True
             else:
-                if self.confirm_window(active_hex_id, class_name) is True:
+                if self.confirm_window(active_hex_id, class_name_short) is True:
                     return True
                 else:
                     self._xlib.focus_window(self._desktop_hex_id)
@@ -114,18 +114,18 @@ class WindowOpen():
                 self.window=None
                 return False
 
-    def confirm_window(self, hex_id:str, class_name:str|None):
+    def confirm_window(self, hex_id:str, class_name_short:str|None):
         xwin=self._xlib.get_window_from_hex_id(hex_id=hex_id)
         if xwin is None:
             raise Exception(f"Couldn't get xlib window from {hex_id}.")
         tmp_window=Window(display=self.display, xwin=xwin,obj_monitors=self._obj_monitors)
         tmp_window.set_exe_info(command=self._command)
 
-        if class_name is None:
+        if class_name_short is None:
             self.window=tmp_window
             return True
         else:
-            if class_name == tmp_window.class_name:
+            if class_name_short == tmp_window.class_name_short:
                 self.window=tmp_window
                 return True
             else:

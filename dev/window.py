@@ -174,7 +174,7 @@ class Window():
         class_name=self.xwin.get_wm_class()
         if class_name is not None:
             self.class_name=".".join(class_name)
-            self.class_name_short=class_name[-1]
+            self.class_name_short=class_name[0]
 
         prop = self.xwin.get_full_property(self.display.get_atom("_NET_WM_NAME"), property_type=AnyPropertyType)
         if prop is not None:
