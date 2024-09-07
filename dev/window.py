@@ -193,9 +193,9 @@ class Window():
         prop = self.xwin.get_full_property(self.display.get_atom("_NET_WM_WINDOW_TYPE"), property_type=AnyPropertyType)
         if prop is not None:
             values=list(prop.value)
-            if WindowType.DESKTOP.value in values:
+            if self.display.get_atom(WindowType.DESKTOP.value) in values:
                 self.is_desktop=True
-            if WindowType.DOCK.value in values:
+            if self.display.get_atom(WindowType.DOCK.value) in values:
                 self.is_taskbar=True
         self.is_regular=self.is_desktop is False and self.is_taskbar is False
 
