@@ -37,7 +37,7 @@ class Taskbars(object):
             xwin = self.display.create_resource_object('window', window_id)
             prop = xwin.get_full_property(self.display.get_atom("_NET_WM_WINDOW_TYPE"), property_type=AnyPropertyType)
             if prop is not None:
-                if WindowType.DOCK.value in list(prop.value):
+                if self.display.get_atom(WindowType.DOCK.value) in list(prop.value):
                     geometry=self._xlib.get_geometry(xwin, show_frame=False)
                     taskbar=Taskbar()
                     taskbar.x=geometry.x

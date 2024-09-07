@@ -36,6 +36,7 @@ class WindowOpen():
     def get_window_hex_ids(self)-> dict[str, list[str]]:
         regular_hex_ids:list[str]=[]
         desktop_hex_ids:list[str]=[]
+        taskbar_hex_ids:list[str]=[]
         prop = self.root.get_full_property(self.display.get_atom("_NET_CLIENT_LIST_STACKING"), property_type=AnyPropertyType)
         if prop is None:
             raise NotImplementedError()
@@ -47,17 +48,19 @@ class WindowOpen():
             is_taskbar=False
             if prop is not None:
                 values=list(prop.value)
-                if WindowType.DESKTOP.value in values:
+                if self.display.get_atom(WindowType.DESKTOP.value) in values:
                     is_desktop=True
                     desktop_hex_ids.append(hex(window_id))
-                if WindowType.DOCK.value in values:
+                if self.display.get_atom(WindowType.DOCK.value) in values:
                     is_taskbar=True
+                    taskbar_hex_ids.append(window_id)
             is_regular=is_desktop is False and is_taskbar is False
             if is_regular is True:
                 regular_hex_ids.append(hex(window_id))
         return dict(
                 desktop_hex_ids=desktop_hex_ids,
                 regular_hex_ids=regular_hex_ids,
+                taskbar_hex_ids=taskbar_hex_ids,
             )
 
     def execute(self, cmd:str|list[str]):
