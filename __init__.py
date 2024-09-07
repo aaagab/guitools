@@ -2,7 +2,7 @@
 # author: Gabriel Auger
 # name: guitools
 # license: MIT
-__version__= "6.0.2"
+__version__= "6.0.3"
 
 from .dev.xlibhelpers import XlibHelpers, WindowType, WindowStateAction, WindowState, Atom, WindowViewState
 from .dev.keyboards import Keyboard
